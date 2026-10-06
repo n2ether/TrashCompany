@@ -1,0 +1,27 @@
+<%- include('../partials/app-start') %>
+<div class="page-head">
+  <div><h1>Email log</h1><p>Every assignment, status update, and invite sent by the system.</p></div>
+</div>
+<% if (!process.env.RESEND_API_KEY) { %>
+  <div class="alert alert--info"><%- icon('info') %><div>Email delivery is in <strong>log-only mode</strong>. Set <code>RESEND_API_KEY</code> to deliver these messages for real.</div></div>
+<% } %>
+<div class="card card--flush">
+  <% if (!emails.length) { %><div class="empty"><%- icon('send') %><h3>No emails yet</h3><p>Dispatch a job to forward it to the crew.</p></div><% } else { %>
+  <div class="table-wrap">
+    <table class="table table--stack">
+      <thead><tr><th>Sent</th><th>To</th><th>Subject &amp; message</th><th>Status</th></tr></thead>
+      <tbody>
+        <% emails.forEach(function (e) { %>
+          <tr>
+            <td data-label="Sent" class="nowrap"><%= fmtDateTime(e.created_at) %></td>
+            <td data-label="To"><%= e.to_email %></td>
+            <td data-label=""><strong><%= e.subject %></strong><div class="small muted" style="white-space:pre-line"><%= e.body %></div></td>
+            <td data-label="Status"><span class="badge badge--<%= e.status === 'sent' ? 'success' : e.status.startsWith('failed') ? 'red' : 'muted' %>"><%= e.status %></span></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</div>
+<%- include('../partials/app-end') %>

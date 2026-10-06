@@ -1,0 +1,57 @@
+<%- include('../partials/public-header') %>
+
+<section class="page-hero">
+  <div class="container">
+    <span class="eyebrow eyebrow--gold">How it works</span>
+    <h1>A clear chain of command, from your request to a finished job</h1>
+    <p class="lead">Every request follows the same five-step path, and you can see each step in your portal.</p>
+  </div>
+</section>
+
+<section class="section section--white">
+  <div class="container">
+    <ol class="stepper" aria-label="Request lifecycle">
+      <li class="done">Submitted</li><li class="done">Scheduled</li><li class="done">Crew Dispatched</li><li class="current">In Progress</li><li>Completed</li>
+    </ol>
+    <div class="grid-2 mt-3">
+      <div class="card card--accent">
+        <h3><%- icon('building') %> 1. You request service</h3>
+        <p>Sign in to the client portal, choose a service like <strong>Bulk Item Removal</strong> or <strong>Common Area Cleanup</strong>, select your property, and tell us where and when. Urgent requests jump to the top of our queue.</p>
+      </div>
+      <div class="card card--accent">
+        <h3><%- icon('calendar') %> 2. Our operations team schedules it</h3>
+        <p>Dispatch reviews the request, picks a date and time, and assigns a <strong>field supervisor</strong> and <strong>service technicians</strong>. You get a notification with the confirmed date.</p>
+      </div>
+      <div class="card card--accent">
+        <h3><%- icon('send') %> 3. The schedule is forwarded to the crew</h3>
+        <p>Supervisors and technicians receive their assignments by email and in the crew app, including the address, gate codes, access notes, and instructions.</p>
+      </div>
+      <div class="card card--accent">
+        <h3><%- icon('checkCircle') %> 4. The crew completes and documents it</h3>
+        <p>Technicians mark the job started and completed from their phone, with notes. Your request updates automatically, and you are notified the moment it is done.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--navy">
+  <div class="container">
+    <div class="section__head"><span class="eyebrow eyebrow--gold">Three portals, one system</span><h2>Built for everyone involved</h2></div>
+    <div class="grid-3">
+      <div class="card"><h3><%- icon('building') %> Property clients</h3><p class="mb-0">Request service, track status, view schedules, manage properties, invite your team, and see invoices.</p></div>
+      <div class="card"><h3><%- icon('grid') %> Operations admins</h3><p class="mb-0">Triage requests, build the weekly schedule, assign crews, forward assignments, and print daily run sheets.</p></div>
+      <div class="card"><h3><%- icon('route') %> Supervisors &amp; technicians</h3><p class="mb-0">See today's route, get directions and access codes, brief the crew, and close out jobs from a phone.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="cta-band">
+      <div><h2>Already a client?</h2><p>Sign in to request service or check on tonight's route.</p></div>
+      <div class="btn-row"><a class="btn btn--gold btn--lg" href="/login">Client login</a><a class="btn btn--light btn--lg" href="/register">Create account</a></div>
+    </div>
+  </div>
+</section>
+
+<%- include('../partials/public-footer') %>

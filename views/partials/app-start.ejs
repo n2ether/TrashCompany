@@ -1,0 +1,76 @@
+<%- include('head') %>
+<%
+  const role = user.role;
+  const navs = {
+    client: [
+      { href: '/portal', label: 'Dashboard', icon: 'grid', exact: true },
+      { href: '/portal/requests/new', label: 'Request Service', icon: 'plus', exact: true },
+      { href: '/portal/requests', label: 'My Requests', icon: 'clipboard', exclude: '/portal/requests/new' },
+      { href: '/portal/schedule', label: 'Service Schedule', icon: 'calendar' },
+      { href: '/portal/properties', label: 'Properties', icon: 'building' },
+      { href: '/portal/account', label: 'Account & Billing', icon: 'settings' },
+      { href: '/notifications', label: 'Notifications', icon: 'bell', count: unread },
+    ],
+    admin: [
+      { href: '/admin', label: 'Dashboard', icon: 'grid', exact: true },
+      { href: '/admin/requests', label: 'Service Requests', icon: 'inbox', count: navCounts && navCounts.queue },
+      { href: '/admin/schedule', label: 'Schedule Board', icon: 'calendar', exact: true },
+      { href: '/admin/schedule/day', label: 'Daily Run Sheet', icon: 'printer' },
+      { href: '/admin/jobs/new', label: 'Create Job', icon: 'plus' },
+      { href: '/admin/clients', label: 'Clients', icon: 'building' },
+      { href: '/admin/team', label: 'Fulfillment Team', icon: 'users' },
+      { href: '/admin/leads', label: 'Quote Requests', icon: 'mail', count: navCounts && navCounts.leads },
+      { href: '/admin/outbox', label: 'Email Log', icon: 'send' },
+      { href: '/notifications', label: 'Notifications', icon: 'bell', count: unread },
+    ],
+    crew: [
+      { href: '/crew', label: 'My Assignments', icon: 'route', exact: true },
+      { href: '/notifications', label: 'Notifications', icon: 'bell', count: unread },
+    ],
+  };
+  const nav = navs[role] || navs.crew;
+  const home = role === 'admin' ? '/admin' : role === 'client' ? '/portal' : '/crew';
+  const isActive = (n) => n.exact ? currentPath === n.href : (currentPath === n.href || currentPath.startsWith(n.href + '/')) && currentPath !== n.exclude;
+%>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+<div class="app">
+  <aside class="sidebar" id="sidebar" aria-label="Sidebar">
+    <div class="sidebar__brand"><%- include('brand', { light: true, href: home }) %></div>
+    <div class="sidebar__role"><%= ROLES[role] %> portal</div>
+    <nav aria-label="Portal">
+      <% nav.forEach(function (n) { %>
+        <a href="<%= n.href %>" <%- isActive(n) ? 'aria-current="page"' : '' %>>
+          <%- icon(n.icon) %><span><%= n.label %></span>
+          <% if (n.count) { %><span class="count" aria-label="<%= n.count %> new"><%= n.count %></span><% } %>
+        </a>
+      <% }) %>
+    </nav>
+    <% if (role === 'client') { %>
+      <div class="sidebar__cta"><a class="btn btn--gold btn--block" href="/portal/requests/new?type=missed_pickup"><%- icon('rotate') %> Report Missed Pickup</a></div>
+    <% } %>
+    <div class="sidebar__pledge"><%- icon('heart') %><span>A portion of every Valor Valet profit supports homeless veteran housing.</span></div>
+  </aside>
+  <div class="scrim" data-scrim></div>
+  <div class="main">
+    <header class="appbar">
+      <div class="appbar__left">
+        <button class="icon-btn menu-btn" type="button" aria-label="Open menu" aria-controls="sidebar" aria-expanded="false" data-sidebar-toggle><%- icon('menu') %></button>
+        <span class="appbar__org"><%= user.org_name || (role === 'admin' ? 'Operations Center' : 'Field Operations') %></span>
+      </div>
+      <div class="appbar__right">
+        <a class="icon-btn" href="/notifications" aria-label="Notifications<%= unread ? ` (${unread} unread)` : '' %>">
+          <%- icon('bell') %><% if (unread) { %><span class="icon-btn__dot"><%= unread > 9 ? '9+' : unread %></span><% } %>
+        </a>
+        <div class="user-chip">
+          <span class="avatar" aria-hidden="true"><%= initials(user.name) %></span>
+          <span class="user-chip__text"><span class="user-chip__name"><%= user.name %></span><br><span class="user-chip__role"><%= user.title || ROLES[role] %></span></span>
+        </div>
+        <form method="post" action="/logout">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button class="icon-btn" type="submit" aria-label="Sign out" title="Sign out"><%- icon('logout') %></button>
+        </form>
+      </div>
+    </header>
+    <main class="content" id="main">
+      <%- include('flash') %>

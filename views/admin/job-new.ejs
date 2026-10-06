@@ -1,0 +1,59 @@
+<%- include('../partials/app-start') %>
+<div class="page-head">
+  <div>
+    <div class="breadcrumb"><a href="/admin/schedule">Schedule</a> <%- icon('chevronRight', 'icon--sm') %> New job</div>
+    <h1>Create a job</h1>
+    <p>Add a one-off visit or generate a recurring nightly valet route.</p>
+  </div>
+</div>
+<form class="card" method="post" action="/admin/jobs" novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <div class="form-section">
+    <h2><span class="step-num">1</span> Job</h2>
+    <div class="form-grid">
+      <div class="field">
+        <label for="property_id">Property <span class="req" aria-hidden="true">*</span></label>
+        <select id="property_id" name="property_id" required>
+          <option value="">Choose a property</option>
+          <% properties.forEach(function (p) { %><option value="<%= p.id %>" <%= form.property_id === p.id ? 'selected' : '' %>><%= p.org_name %> — <%= p.name %></option><% }) %>
+        </select>
+      </div>
+      <div class="field">
+        <label for="type">Service type</label>
+        <select id="type" name="type">
+          <% Object.keys(SERVICE_TYPES).forEach(function (t) { %><option value="<%= t %>" <%= form.type === t ? 'selected' : '' %>><%= SERVICE_TYPES[t].label %></option><% }) %>
+        </select>
+      </div>
+      <div class="field span-2"><label for="title">Job title <span class="req" aria-hidden="true">*</span></label><input id="title" name="title" type="text" required placeholder="Nightly valet trash route — Property name" value="<%= form.title || '' %>"></div>
+    </div>
+  </div>
+  <div class="form-section">
+    <h2><span class="step-num">2</span> When</h2>
+    <div class="form-grid">
+      <div class="field"><label for="scheduled_date">First date</label><input id="scheduled_date" name="scheduled_date" type="date" required value="<%= form.scheduled_date %>"></div>
+      <div class="field"><label for="start_time">Start</label><input id="start_time" name="start_time" type="time" value="<%= form.start_time || '' %>"></div>
+      <div class="field"><label for="end_time">End</label><input id="end_time" name="end_time" type="time" value="<%= form.end_time || '' %>"></div>
+    </div>
+    <label class="check mt-2"><input type="checkbox" data-repeat-toggle <%= form.repeat_until ? 'checked' : '' %>> Repeat on selected nights</label>
+    <div class="mt-2" data-repeat-panel>
+      <fieldset class="mb-2">
+        <legend>Repeat on</legend>
+        <div class="day-picker">
+          <% NIGHTS.forEach(function (n) { %><label><input type="checkbox" name="repeat_nights" value="<%= n %>" <%= (form.repeat_nights || []).includes(n) ? 'checked' : '' %>><span><%= n %></span></label><% }) %>
+        </div>
+      </fieldset>
+      <div class="field" style="max-width:280px"><label for="repeat_until">Repeat until</label><input id="repeat_until" name="repeat_until" type="date" value="<%= form.repeat_until || '' %>"><span class="hint">Up to 13 weeks at a time.</span></div>
+    </div>
+  </div>
+  <div class="form-section">
+    <h2><span class="step-num">3</span> Crew</h2>
+    <%- include('../partials/crew-fields', { selected: form }) %>
+    <div class="field mt-2"><label for="instructions">Crew instructions</label><textarea id="instructions" name="instructions"><%= form.instructions || '' %></textarea></div>
+    <label class="check mt-2"><input type="checkbox" name="dispatch_now" value="1"> Forward to supervisor &amp; technicians now</label>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn--gold btn--lg" type="submit"><%- icon('calendar') %> Create job</button>
+    <a class="btn btn--ghost btn--lg" href="/admin/schedule">Cancel</a>
+  </div>
+</form>
+<%- include('../partials/app-end') %>

@@ -1,0 +1,30 @@
+<%- include('head') %>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+<div class="topbar">
+  <div class="container">
+    <span class="topbar__badge"><%- icon('flag', 'icon--sm') %> Disabled Veteran Owned Small Business</span>
+    <span>Call <a href="tel:+18005550142"><%= COMPANY.phone %></a> &middot; <a href="mailto:<%= COMPANY.email %>"><%= COMPANY.email %></a></span>
+  </div>
+</div>
+<header class="site-header">
+  <div class="container">
+    <%- include('brand') %>
+    <button class="btn btn--ghost nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" data-nav-toggle>
+      <%- icon('menu') %><span>Menu</span>
+    </button>
+    <nav class="site-nav" id="site-nav" aria-label="Main">
+      <a href="/services" <%- currentPath === '/services' ? 'aria-current="page"' : '' %>>Services</a>
+      <a href="/how-it-works" <%- currentPath === '/how-it-works' ? 'aria-current="page"' : '' %>>How It Works</a>
+      <a href="/mission" <%- currentPath === '/mission' ? 'aria-current="page"' : '' %>>Our Mission</a>
+      <a href="/contact" <%- currentPath === '/contact' ? 'aria-current="page"' : '' %>>Get a Quote</a>
+      <% if (user) { %>
+        <a class="btn btn--sm" href="<%= user.role === 'admin' ? '/admin' : user.role === 'client' ? '/portal' : '/crew' %>"><%- icon('grid', 'icon--sm') %> My Dashboard</a>
+      <% } else { %>
+        <a class="btn btn--outline btn--sm" href="/login"><%- icon('user', 'icon--sm') %> Client Login</a>
+        <a class="btn btn--gold btn--sm" href="/contact">Free Quote</a>
+      <% } %>
+    </nav>
+  </div>
+</header>
+<main id="main">

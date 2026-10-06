@@ -1,0 +1,70 @@
+<%- include('../partials/app-start') %>
+<%
+  const nights = (property.service_nights || '').split(',');
+  const services = (property.services || '').split(',');
+%>
+<div class="page-head">
+  <div>
+    <div class="breadcrumb"><a href="/portal/properties">Properties</a> <%- icon('chevronRight', 'icon--sm') %> <%= isNew ? 'New' : 'Edit' %></div>
+    <h1><%= isNew ? 'Add a property' : 'Edit ' + property.name %></h1>
+  </div>
+</div>
+<form class="card" method="post" action="<%= isNew ? '/portal/properties' : '/portal/properties/' + property.id %>" novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <div class="form-section">
+    <h2><span class="step-num">1</span> Location</h2>
+    <div class="form-grid">
+      <div class="field span-2"><label for="name">Property name <span class="req" aria-hidden="true">*</span></label><input id="name" name="name" type="text" required value="<%= property.name || '' %>"></div>
+      <div class="field span-2"><label for="address">Street address <span class="req" aria-hidden="true">*</span></label><input id="address" name="address" type="text" autocomplete="street-address" required value="<%= property.address || '' %>"></div>
+      <div class="field"><label for="city">City</label><input id="city" name="city" type="text" value="<%= property.city || '' %>"></div>
+      <div class="field"><label for="state">State</label><input id="state" name="state" type="text" maxlength="2" value="<%= property.state || '' %>"></div>
+      <div class="field"><label for="zip">ZIP</label><input id="zip" name="zip" type="text" inputmode="numeric" value="<%= property.zip || '' %>"></div>
+    </div>
+  </div>
+  <div class="form-section">
+    <h2><span class="step-num">2</span> Community</h2>
+    <div class="form-grid">
+      <div class="field"><label for="units">Units (doors)</label><input id="units" name="units" type="number" min="0" value="<%= property.units || '' %>"></div>
+      <div class="field"><label for="buildings">Buildings</label><input id="buildings" name="buildings" type="number" min="1" value="<%= property.buildings || 1 %>"></div>
+      <div class="field">
+        <label for="property_type">Property type</label>
+        <select id="property_type" name="property_type">
+          <% ['Garden-style', 'Mid-rise', 'High-rise', 'Townhomes', 'Student housing', 'Senior living', 'Mixed-use'].forEach(function (t) { %><option <%= property.property_type === t ? 'selected' : '' %>><%= t %></option><% }) %>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="form-section">
+    <h2><span class="step-num">3</span> Service plan</h2>
+    <fieldset class="mb-2">
+      <legend>Valet trash nights</legend>
+      <div class="day-picker">
+        <% NIGHTS.forEach(function (n) { %><label><input type="checkbox" name="service_nights" value="<%= n %>" <%= nights.includes(n) ? 'checked' : '' %>><span><%= n %></span></label><% }) %>
+      </div>
+      <span class="hint">Most communities choose Sunday through Thursday.</span>
+    </fieldset>
+    <div class="form-grid">
+      <div class="field"><label for="service_window">Collection window</label><input id="service_window" name="service_window" type="text" placeholder="8:00 PM – 10:00 PM" value="<%= property.service_window || '' %>"></div>
+    </div>
+    <fieldset class="mt-3">
+      <legend>Services at this property</legend>
+      <div class="check-row">
+        <% Object.keys(SERVICE_TYPES).filter(function (k) { return k !== 'missed_pickup' && k !== 'other'; }).forEach(function (k) { %>
+          <label class="check"><input type="checkbox" name="services" value="<%= k %>" <%= services.includes(k) ? 'checked' : '' %>> <%= SERVICE_TYPES[k].label %></label>
+        <% }) %>
+      </div>
+    </fieldset>
+  </div>
+  <div class="form-section">
+    <h2><span class="step-num">4</span> Crew access</h2>
+    <div class="form-grid">
+      <div class="field span-2"><label for="onsite_contact">Onsite contact</label><input id="onsite_contact" name="onsite_contact" type="text" placeholder="Name and phone" value="<%= property.onsite_contact || '' %>"></div>
+      <div class="field span-2"><label for="access_notes">Access notes</label><textarea id="access_notes" name="access_notes" placeholder="Gate codes, key locations, compactor access, parking, hazards"><%= property.access_notes || '' %></textarea><span class="hint">Shared only with the assigned supervisor and technicians.</span></div>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn--gold btn--lg" type="submit"><%= isNew ? 'Add property' : 'Save changes' %></button>
+    <a class="btn btn--ghost btn--lg" href="/portal/properties">Cancel</a>
+  </div>
+</form>
+<%- include('../partials/app-end') %>

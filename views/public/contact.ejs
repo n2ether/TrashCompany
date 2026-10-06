@@ -1,0 +1,60 @@
+<%- include('../partials/public-header') %>
+
+<section class="page-hero">
+  <div class="container">
+    <span class="eyebrow eyebrow--gold">Free quote</span>
+    <h1>Tell us about your community</h1>
+    <p class="lead">We will follow up within one business day to schedule a free walk-through and per-door quote.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container grid-main">
+    <div class="card">
+      <% if (sent) { %>
+        <div class="empty">
+          <%- icon('checkCircle') %>
+          <h2>Thank you, we received your request</h2>
+          <p>A member of our team will reach out within one business day. Need us sooner? Call <a href="tel:+18005550142"><%= COMPANY.phone %></a>.</p>
+          <a class="btn mt-2" href="/">Back to home</a>
+        </div>
+      <% } else { %>
+        <%- include('../partials/flash') %>
+        <form method="post" action="/contact" novalidate>
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <div class="form-grid">
+            <div class="field"><label for="name">Your name <span class="req" aria-hidden="true">*</span></label><input id="name" name="name" type="text" autocomplete="name" required value="<%= form.name || '' %>"></div>
+            <div class="field"><label for="email">Email <span class="req" aria-hidden="true">*</span></label><input id="email" name="email" type="email" autocomplete="email" required value="<%= form.email || '' %>"></div>
+            <div class="field"><label for="phone">Phone</label><input id="phone" name="phone" type="tel" autocomplete="tel" value="<%= form.phone || '' %>"></div>
+            <div class="field"><label for="company">Management company</label><input id="company" name="company" type="text" autocomplete="organization" value="<%= form.company || '' %>"></div>
+            <div class="field"><label for="property_name">Property name</label><input id="property_name" name="property_name" type="text" value="<%= form.property_name || '' %>"></div>
+            <div class="field"><label for="units">Number of units (doors)</label><input id="units" name="units" type="number" min="1" inputmode="numeric" value="<%= form.units || '' %>"></div>
+            <fieldset class="span-2">
+              <legend>Services you're interested in</legend>
+              <div class="check-row">
+                <% ['valet_trash', 'common_area', 'bulk_removal', 'pet_station', 'enclosure', 'trash_out'].forEach(function (t) { %>
+                  <label class="check"><input type="checkbox" name="services" value="<%= t %>"> <%= SERVICE_TYPES[t].label %></label>
+                <% }) %>
+              </div>
+            </fieldset>
+            <div class="field span-2"><label for="message">Anything else we should know?</label><textarea id="message" name="message" placeholder="Current provider, contract dates, number of buildings, special needs..."><%= form.message || '' %></textarea></div>
+          </div>
+          <button class="btn btn--gold btn--lg mt-3" type="submit">Send my quote request <%- icon('send') %></button>
+        </form>
+      <% } %>
+    </div>
+    <aside>
+      <div class="card card--accent">
+        <h3>Talk to a person</h3>
+        <p class="mb-0"><%- icon('phone') %> <a href="tel:+18005550142"><%= COMPANY.phone %></a><br><%- icon('mail') %> <a href="mailto:<%= COMPANY.email %>"><%= COMPANY.email %></a></p>
+        <p class="muted small mt-2 mb-0">Monday to Friday, 8 AM to 6 PM. Our dispatch line is answered every service night.</p>
+      </div>
+      <div class="card">
+        <h3><%- icon('heart') %> Every contract gives back</h3>
+        <p class="mb-0">A portion of our profits supports homeless veteran housing programs. <a href="/mission">Learn more</a>.</p>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<%- include('../partials/public-footer') %>

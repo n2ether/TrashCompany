@@ -1,0 +1,69 @@
+<%- include('../partials/app-start') %>
+<% const mapUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(job.address + ', ' + job.city + ', ' + job.state + ' ' + job.zip); %>
+<div class="page-head">
+  <div>
+    <div class="breadcrumb"><a href="/crew">Assignments</a> <%- icon('chevronRight', 'icon--sm') %> Job #<%= job.id %></div>
+    <h1><%= job.property_name %></h1>
+    <p><%= relativeDay(job.scheduled_date) %>, <%= fmtLongDate(job.scheduled_date) %><%= job.start_time ? ' · ' + fmtTime(job.start_time) : '' %><%= job.end_time ? ' – ' + fmtTime(job.end_time) : '' %></p>
+  </div>
+  <%- statusBadge(job.status) %>
+</div>
+
+<div class="grid-main">
+  <div>
+    <section class="card">
+      <div class="card__head"><h2><%- typeChip(job.type) %> <%= job.title %></h2></div>
+      <% if (job.instructions) { %><div class="alert alert--info"><%- icon('clipboard') %><div><strong>Instructions</strong><br><%= job.instructions %></div></div><% } %>
+      <% if (job.request_description && job.request_description !== job.instructions) { %><p><strong>Client request:</strong> <%= job.request_description %></p><% } %>
+      <dl class="dl">
+        <dt>Address</dt><dd><%= job.address %>, <%= job.city %> <%= job.state %> <%= job.zip %></dd>
+        <% if (job.location_details) { %><dt>Area</dt><dd><%= job.location_details %></dd><% } %>
+        <% if (job.quantity) { %><dt>Items</dt><dd><%= job.quantity %></dd><% } %>
+        <dt>Access</dt><dd><strong><%= job.access_notes || 'No access notes' %></strong></dd>
+        <dt>Onsite contact</dt><dd><%= job.onsite_contact || '—' %></dd>
+        <dt>Supervisor</dt><dd><%= job.supervisor_name || '—' %><% if (job.supervisor_phone) { %> &middot; <a href="tel:<%= job.supervisor_phone %>"><%= job.supervisor_phone %></a><% } %></dd>
+        <dt>Crew</dt><dd><%= job.technician_names || '—' %></dd>
+      </dl>
+      <a class="btn btn--outline btn--lg mt-3" href="<%= mapUrl %>" target="_blank" rel="noopener"><%- icon('mapPin') %> Get directions</a>
+    </section>
+  </div>
+
+  <aside>
+    <% if (job.status === 'completed') { %>
+      <section class="card">
+        <div class="alert alert--success mb-0"><%- icon('checkCircle') %><div><strong>Completed</strong> <%= fmtDateTime(job.completed_at) %><% if (job.completion_notes) { %><br><%= job.completion_notes %><% } %></div></div>
+      </section>
+    <% } else if (job.status === 'cancelled') { %>
+      <section class="card"><div class="alert alert--info mb-0"><%- icon('x') %><div>This job was cancelled by dispatch.</div></div></section>
+    <% } else { %>
+      <section class="card card--accent">
+        <h2 style="font-size:1.2rem">Update this job</h2>
+        <% if (job.status !== 'in_progress') { %>
+          <form method="post" action="/crew/jobs/<%= job.id %>/status" class="mb-3">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="status" value="in_progress">
+            <button class="btn btn--lg btn--block" type="submit"><%- icon('play') %> Start job</button>
+          </form>
+        <% } %>
+        <form method="post" action="/crew/jobs/<%= job.id %>/status">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="status" value="completed">
+          <div class="field mb-2">
+            <label for="notes">Completion notes</label>
+            <textarea id="notes" name="notes" placeholder="What was done, issues found, compactor level, violations tagged..."></textarea>
+            <span class="hint">The client and dispatch will see these notes.</span>
+          </div>
+          <button class="btn btn--success btn--lg btn--block" type="submit"><%- icon('checkCircle') %> Mark complete</button>
+        </form>
+      </section>
+      <% if (isSupervisor && job.technicians.length) { %>
+        <form class="card" method="post" action="/crew/jobs/<%= job.id %>/brief">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <h2 style="font-size:1.2rem"><%- icon('users') %> Brief your crew</h2>
+          <p class="small muted">Send a message to <%= job.technician_names %>.</p>
+          <div class="field mb-2"><label for="message">Message</label><textarea id="message" name="message" required placeholder="Meet at the leasing office at 7:45 PM. Bring headlamps."></textarea></div>
+          <button class="btn btn--block" type="submit"><%- icon('send') %> Send briefing</button>
+        </form>
+      <% } %>
+    <% } %>
+  </aside>
+</div>
+<%- include('../partials/app-end') %>

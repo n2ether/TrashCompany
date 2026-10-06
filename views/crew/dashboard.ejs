@@ -1,0 +1,61 @@
+<%- include('../partials/app-start') %>
+<div class="page-head">
+  <div><h1><%= user.role === 'supervisor' ? 'Crew assignments' : 'My assignments' %></h1><p><%= fmtLongDate(today) %></p></div>
+</div>
+
+<div class="stats">
+  <div class="stat"><span class="stat__icon stat__icon--gold"><%- icon('route') %></span><div><div class="stat__value"><%= stats.today %></div><div class="stat__label">Jobs today</div></div></div>
+  <div class="stat"><span class="stat__icon"><%- icon('clock') %></span><div><div class="stat__value"><%= stats.remaining %></div><div class="stat__label">Still to finish today</div></div></div>
+  <div class="stat"><span class="stat__icon stat__icon--green"><%- icon('calendar') %></span><div><div class="stat__value"><%= stats.week %></div><div class="stat__label">Next 7 days</div></div></div>
+</div>
+
+<h2>Today</h2>
+<% if (!todayJobs.length) { %>
+  <div class="card mb-3"><div class="empty"><%- icon('checkCircle') %><h3>Nothing assigned today</h3><p>New assignments from dispatch will show up here and in your email.</p></div></div>
+<% } %>
+<div class="crew-today mb-3">
+  <% todayJobs.forEach(function (j) { const mapUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(j.address + ', ' + j.city + ', ' + j.state + ' ' + j.zip); %>
+    <article class="crew-job">
+      <div class="crew-job__head">
+        <div><div class="crew-job__time"><%= j.start_time ? fmtTime(j.start_time) : 'Any time' %></div><div class="muted small"><%= j.end_time ? 'until ' + fmtTime(j.end_time) : '' %></div></div>
+        <%- statusBadge(j.status) %>
+      </div>
+      <div class="crew-job__body">
+        <h3><%= j.property_name %></h3>
+        <div class="list-item__meta mb-2">
+          <span><%- typeChip(j.type) %></span>
+          <span><%- icon('mapPin', 'icon--sm') %> <%= j.address %>, <%= j.city %></span>
+          <span><%- icon(user.role === 'supervisor' ? 'users' : 'shield', 'icon--sm') %> <%= user.role === 'supervisor' ? (j.technician_names || 'No technicians') : 'Supervisor: ' + (j.supervisor_name || '—') %></span>
+        </div>
+        <div class="big-actions">
+          <a class="btn btn--gold btn--lg" href="/crew/jobs/<%= j.id %>"><%- icon('clipboard') %> Open job</a>
+          <a class="btn btn--outline btn--lg" href="<%= mapUrl %>" target="_blank" rel="noopener"><%- icon('mapPin') %> Directions</a>
+        </div>
+      </div>
+    </article>
+  <% }) %>
+</div>
+
+<h2>Upcoming</h2>
+<% const dates = Object.keys(grouped); %>
+<% if (!dates.length) { %><p class="muted">No upcoming assignments in the next two weeks.</p><% } %>
+<div class="grid-2">
+  <% dates.forEach(function (d) { %>
+    <section class="card">
+      <h3 style="font-size:1.1rem"><%= relativeDay(d) %><%= relativeDay(d) === 'Tomorrow' ? ', ' + fmtDate(d) : '' %></h3>
+      <% grouped[d].forEach(function (job) { %><%- include('../partials/job-card', { job: job, href: '/crew/jobs/' + job.id }) %><% }) %>
+    </section>
+  <% }) %>
+</div>
+
+<% if (recent.length) { %>
+  <h2 class="mt-3">Completed this past week</h2>
+  <div class="card">
+    <ul class="list">
+      <% recent.slice(0, 10).forEach(function (j) { %>
+        <li class="list-item"><div class="list-item__main"><a class="list-item__title" href="/crew/jobs/<%= j.id %>"><%= j.property_name %></a><div class="list-item__meta"><span><%= fmtDate(j.scheduled_date) %></span><span><%= j.completion_notes || '' %></span></div></div><%- statusBadge(j.status) %></li>
+      <% }) %>
+    </ul>
+  </div>
+<% } %>
+<%- include('../partials/app-end') %>

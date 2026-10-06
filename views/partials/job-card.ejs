@@ -1,0 +1,14 @@
+<a class="job-card job-card--<%= job.type %><%= job.status === 'completed' ? ' job-card--done' : '' %>" href="<%= href %>">
+  <div class="job-card__top">
+    <span class="job-card__time"><%= job.start_time ? fmtTime(job.start_time) : 'Any time' %><%= job.end_time ? ' – ' + fmtTime(job.end_time) : '' %></span>
+    <%- statusBadge(job.status) %>
+  </div>
+  <div class="job-card__title"><%= job.property_name %></div>
+  <div class="job-card__meta">
+    <span><%- typeChip(job.type) %></span>
+    <% if (typeof showCrew === 'undefined' || showCrew) { %>
+      <span><%- icon('shield', 'icon--sm') %> <%= job.supervisor_name || 'No supervisor' %></span>
+      <span><%- icon('users', 'icon--sm') %> <%= job.technician_names || 'No technicians assigned' %></span>
+    <% } %>
+  </div>
+</a>

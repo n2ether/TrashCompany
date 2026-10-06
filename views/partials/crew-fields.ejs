@@ -1,0 +1,20 @@
+<%
+  const sel = typeof selected !== 'undefined' && selected ? selected : { supervisor_id: null, technician_ids: [] };
+%>
+<div class="form-grid">
+  <div class="field">
+    <label for="supervisor_id">Field supervisor <span class="req" aria-hidden="true">*</span></label>
+    <select id="supervisor_id" name="supervisor_id" required>
+      <option value="">Choose a supervisor</option>
+      <% supervisors.forEach(function (s) { %><option value="<%= s.id %>" <%= sel.supervisor_id === s.id ? 'selected' : '' %>><%= s.name %></option><% }) %>
+    </select>
+  </div>
+  <fieldset class="span-2">
+    <legend>Service technicians</legend>
+    <div class="check-row">
+      <% technicians.forEach(function (t) { %>
+        <label class="check"><input type="checkbox" name="technician_ids" value="<%= t.id %>" <%= (sel.technician_ids || []).includes(t.id) ? 'checked' : '' %>> <%= t.name %></label>
+      <% }) %>
+    </div>
+  </fieldset>
+</div>

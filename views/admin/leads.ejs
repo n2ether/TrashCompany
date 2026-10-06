@@ -1,0 +1,32 @@
+<%- include('../partials/app-start') %>
+<div class="page-head"><div><h1>Quote requests</h1><p>Prospects from the website "Get a Quote" form.</p></div></div>
+<div class="card card--flush">
+  <% if (!leads.length) { %><div class="empty"><%- icon('mail') %><h3>No quote requests yet</h3></div><% } else { %>
+  <div class="table-wrap">
+    <table class="table table--stack">
+      <thead><tr><th>Contact</th><th>Property</th><th>Services</th><th>Message</th><th>Status</th></tr></thead>
+      <tbody>
+        <% leads.forEach(function (l) { %>
+          <tr>
+            <td data-label=""><strong><%= l.name %></strong><div class="small"><a href="mailto:<%= l.email %>"><%= l.email %></a><br><%= l.phone || '' %></div><div class="muted small"><%= fmtDateTime(l.created_at) %></div></td>
+            <td data-label="Property"><%= l.property_name || '—' %><div class="muted small"><%= l.company || '' %><%= l.units ? ' · ' + l.units + ' units' : '' %></div></td>
+            <td data-label="Services"><div class="btn-row" style="gap:.3rem"><% (l.services || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean).forEach(function (s) { %><%- typeChip(s) %><% }) %></div></td>
+            <td data-label="Message" class="small"><%= l.message || '' %></td>
+            <td data-label="Status">
+              <form method="post" action="/admin/leads/<%= l.id %>/status">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <label class="sr-only" for="lead-<%= l.id %>">Lead status</label>
+                <select id="lead-<%= l.id %>" name="status" onchange="this.form.submit()">
+                  <% ['new', 'contacted', 'won', 'lost'].forEach(function (s) { %><option value="<%= s %>" <%= l.status === s ? 'selected' : '' %>><%= s.charAt(0).toUpperCase() + s.slice(1) %></option><% }) %>
+                </select>
+                <noscript><button class="btn btn--sm" type="submit">Save</button></noscript>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</div>
+<%- include('../partials/app-end') %>

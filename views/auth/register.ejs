@@ -1,0 +1,48 @@
+<%- include('../partials/public-header') %>
+<div class="auth">
+  <div class="auth__form auth__form--wide">
+    <div>
+      <h1>Create your client account</h1>
+      <p class="muted">Set up your company and first property. You can add more properties and teammates after you sign in.</p>
+      <%- include('../partials/flash') %>
+      <form method="post" action="/register" novalidate>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="form-section">
+          <h2><span class="step-num">1</span> About you</h2>
+          <div class="form-grid">
+            <div class="field"><label for="name">Full name <span class="req" aria-hidden="true">*</span></label><input id="name" name="name" type="text" autocomplete="name" required value="<%= form.name || '' %>"></div>
+            <div class="field"><label for="title">Job title</label><input id="title" name="title" type="text" autocomplete="organization-title" placeholder="Property Manager" value="<%= form.title || '' %>"></div>
+            <div class="field"><label for="email">Work email <span class="req" aria-hidden="true">*</span></label><input id="email" name="email" type="email" autocomplete="email" required value="<%= form.email || '' %>"></div>
+            <div class="field"><label for="phone">Phone</label><input id="phone" name="phone" type="tel" autocomplete="tel" value="<%= form.phone || '' %>"></div>
+            <div class="field span-2"><label for="password">Password <span class="req" aria-hidden="true">*</span></label><input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required aria-describedby="pw-hint"><span class="hint" id="pw-hint">At least 8 characters.</span></div>
+          </div>
+        </div>
+        <div class="form-section">
+          <h2><span class="step-num">2</span> Your company &amp; first property</h2>
+          <div class="form-grid">
+            <div class="field span-2"><label for="company">Management company or ownership group <span class="req" aria-hidden="true">*</span></label><input id="company" name="company" type="text" autocomplete="organization" required value="<%= form.company || '' %>"></div>
+            <div class="field"><label for="property_name">Property name <span class="req" aria-hidden="true">*</span></label><input id="property_name" name="property_name" type="text" required value="<%= form.property_name || '' %>"></div>
+            <div class="field"><label for="units">Units (doors)</label><input id="units" name="units" type="number" min="1" inputmode="numeric" value="<%= form.units || '' %>"></div>
+            <div class="field span-2"><label for="address">Street address <span class="req" aria-hidden="true">*</span></label><input id="address" name="address" type="text" autocomplete="street-address" required value="<%= form.address || '' %>"></div>
+            <div class="field"><label for="city">City</label><input id="city" name="city" type="text" autocomplete="address-level2" value="<%= form.city || '' %>"></div>
+            <div class="field"><label for="state">State</label><input id="state" name="state" type="text" maxlength="2" autocomplete="address-level1" placeholder="TX" value="<%= form.state || '' %>"></div>
+            <div class="field"><label for="zip">ZIP code</label><input id="zip" name="zip" type="text" inputmode="numeric" autocomplete="postal-code" value="<%= form.zip || '' %>"></div>
+          </div>
+        </div>
+        <button class="btn btn--gold btn--lg" type="submit">Create account</button>
+        <p class="mt-2">Already have an account? <a href="/login"><strong>Sign in</strong></a></p>
+      </form>
+    </div>
+  </div>
+  <div class="auth__panel">
+    <span class="eyebrow eyebrow--gold">Why property managers switch</span>
+    <h2>Fewer resident complaints. Less work for your team.</h2>
+    <ul class="check-list">
+      <li><%- icon('checkCircle') %><span>Supervisor-led, background-checked crews</span></li>
+      <li><%- icon('checkCircle') %><span>Missed-pickup comebacks, usually the same night</span></li>
+      <li><%- icon('checkCircle') %><span>Every visit documented in your portal</span></li>
+    </ul>
+    <p class="mb-0"><%- icon('heart') %> Your service helps fund housing for homeless veterans.</p>
+  </div>
+</div>
+<%- include('../partials/public-footer') %>

@@ -1,0 +1,93 @@
+<%- include('../partials/app-start') %>
+<div class="page-head"><div><h1>Account &amp; billing</h1><p><%= org.name %> &middot; Plan: <strong><%= org.plan %></strong></p></div></div>
+
+<nav class="tabs" aria-label="Account sections">
+  <% [['profile', 'user', 'My profile'], ['company', 'building', 'Company'], ['team', 'users', 'Team'], ['billing', 'receipt', 'Billing'], ['security', 'key', 'Security']].forEach(function (t) { %>
+    <a href="/portal/account?tab=<%= t[0] %>" <%- tab === t[0] ? 'aria-current="page"' : '' %>><%- icon(t[1], 'icon--sm') %> <%= t[2] %></a>
+  <% }) %>
+</nav>
+
+<% if (tab === 'profile') { %>
+  <form class="card" method="post" action="/portal/account/profile" style="max-width:760px">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <h2 style="font-size:1.25rem">My profile</h2>
+    <div class="form-grid">
+      <div class="field"><label for="name">Full name</label><input id="name" name="name" type="text" required value="<%= user.name %>"></div>
+      <div class="field"><label for="title">Job title</label><input id="title" name="title" type="text" value="<%= user.title || '' %>"></div>
+      <div class="field"><label for="email">Email</label><input id="email" type="email" value="<%= user.email %>" disabled><span class="hint">Contact us to change your sign-in email.</span></div>
+      <div class="field"><label for="phone">Phone</label><input id="phone" name="phone" type="tel" value="<%= user.phone || '' %>"></div>
+    </div>
+    <button class="btn mt-3" type="submit">Save profile</button>
+  </form>
+<% } else if (tab === 'company') { %>
+  <form class="card" method="post" action="/portal/account/organization" style="max-width:760px">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <h2 style="font-size:1.25rem">Company details</h2>
+    <div class="form-grid">
+      <div class="field span-2"><label for="org-name">Company name</label><input id="org-name" name="name" type="text" required value="<%= org.name %>"></div>
+      <div class="field"><label for="billing_email">Billing email</label><input id="billing_email" name="billing_email" type="email" value="<%= org.billing_email || '' %>"></div>
+      <div class="field"><label for="org-phone">Main phone</label><input id="org-phone" name="phone" type="tel" value="<%= org.phone || '' %>"></div>
+      <div class="field span-2"><label for="org-address">Mailing address</label><input id="org-address" name="address" type="text" value="<%= org.address || '' %>"></div>
+    </div>
+    <button class="btn mt-3" type="submit">Save company</button>
+  </form>
+<% } else if (tab === 'team') { %>
+  <div class="grid-main">
+    <section class="card card--flush">
+      <div class="card__head"><h2>Team members</h2></div>
+      <div class="table-wrap">
+        <table class="table table--stack">
+          <thead><tr><th>Name</th><th>Email</th><th>Phone</th></tr></thead>
+          <tbody>
+            <% team.forEach(function (m) { %>
+              <tr><td data-label=""><span class="user-chip" style="padding:0"><span class="avatar avatar--sm"><%= initials(m.name) %></span><span><strong><%= m.name %></strong><br><span class="muted small"><%= m.title || 'Team member' %></span></span></span></td><td data-label="Email"><%= m.email %></td><td data-label="Phone"><%= m.phone || '—' %></td></tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <form class="card" method="post" action="/portal/account/team">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <h2 style="font-size:1.2rem">Invite a teammate</h2>
+      <p class="small muted">They'll be able to request service and view schedules for all of your properties.</p>
+      <div class="field mb-2"><label for="t-name">Name</label><input id="t-name" name="name" type="text" required></div>
+      <div class="field mb-2"><label for="t-email">Email</label><input id="t-email" name="email" type="email" required></div>
+      <div class="field mb-2"><label for="t-title">Job title</label><input id="t-title" name="title" type="text"></div>
+      <div class="field mb-2"><label for="t-phone">Phone</label><input id="t-phone" name="phone" type="tel"></div>
+      <button class="btn btn--block" type="submit"><%- icon('plus') %> Send invite</button>
+    </form>
+  </div>
+<% } else if (tab === 'billing') { %>
+  <section class="card card--flush">
+    <div class="card__head"><h2>Invoices</h2><span class="muted small">Questions? Email <a href="mailto:<%= COMPANY.email %>"><%= COMPANY.email %></a></span></div>
+    <% if (!invoices.length) { %><div class="empty"><%- icon('receipt') %><h3>No invoices yet</h3></div><% } else { %>
+      <div class="table-wrap">
+        <table class="table table--stack">
+          <thead><tr><th>Invoice</th><th>Billing month</th><th>Due</th><th>Amount</th><th>Status</th></tr></thead>
+          <tbody>
+            <% invoices.forEach(function (i) { %>
+              <tr>
+                <td data-label="Invoice"><strong><%= i.number %></strong></td>
+                <td data-label="Billing month"><%= new Date(i.period + '-15').toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) %></td>
+                <td data-label="Due"><%= fmtDate(i.due_date) %></td>
+                <td data-label="Amount"><strong><%= fmtMoney(i.amount_cents) %></strong></td>
+                <td data-label="Status"><% if (i.status === 'paid') { %><span class="badge badge--success"><%- icon('check', 'icon--sm') %>Paid</span><% } else { %><span class="badge badge--amber"><%- icon('clock', 'icon--sm') %>Open</span><% } %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </section>
+  <div class="card card--accent mt-3"><p class="mb-0"><%- icon('heart') %> <strong>Your service gives back.</strong> A portion of Valor Valet's profits funds housing programs for homeless veterans.</p></div>
+<% } else { %>
+  <form class="card" method="post" action="/portal/account/password" style="max-width:560px">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <h2 style="font-size:1.25rem">Change password</h2>
+    <div class="field mb-2"><label for="current_password">Current password</label><input id="current_password" name="current_password" type="password" autocomplete="current-password" required></div>
+    <div class="field mb-2"><label for="new_password">New password</label><input id="new_password" name="new_password" type="password" autocomplete="new-password" minlength="8" required><span class="hint">At least 8 characters.</span></div>
+    <div class="field mb-3"><label for="confirm_password">Confirm new password</label><input id="confirm_password" name="confirm_password" type="password" autocomplete="new-password" required></div>
+    <button class="btn" type="submit">Update password</button>
+  </form>
+<% } %>
+<%- include('../partials/app-end') %>

@@ -1,0 +1,49 @@
+<%- include('../partials/app-start') %>
+<div class="page-head"><div><h1>Service requests</h1><p>Triage, schedule, and track every client request.</p></div></div>
+
+<form class="filters" method="get" action="/admin/requests">
+  <div class="field">
+    <label for="status">Status</label>
+    <select id="status" name="status">
+      <option value="open" <%= status === 'open' ? 'selected' : '' %>>All open</option>
+      <% Object.keys(STATUSES).forEach(function (s) { %><option value="<%= s %>" <%= status === s ? 'selected' : '' %>><%= STATUSES[s].label %></option><% }) %>
+      <option value="all" <%= status === 'all' ? 'selected' : '' %>>Everything</option>
+    </select>
+  </div>
+  <div class="field">
+    <label for="type">Service</label>
+    <select id="type" name="type">
+      <option value="">All services</option>
+      <% Object.keys(SERVICE_TYPES).forEach(function (t) { %><option value="<%= t %>" <%= type === t ? 'selected' : '' %>><%= SERVICE_TYPES[t].label %></option><% }) %>
+    </select>
+  </div>
+  <div class="field" style="flex:1"><label for="q">Search</label><input id="q" name="q" type="search" placeholder="Property, client, description, or #" value="<%= q %>"></div>
+  <button class="btn" type="submit">Apply</button>
+</form>
+
+<div class="card card--flush">
+  <% if (!requests.length) { %><div class="empty"><%- icon('inbox') %><h3>No matching requests</h3></div><% } else { %>
+    <div class="table-wrap">
+      <table class="table table--stack">
+        <thead><tr><th>Request</th><th>Client / property</th><th>Submitted</th><th>Preferred</th><th>Status</th><th><span class="sr-only">Actions</span></th></tr></thead>
+        <tbody>
+          <% requests.forEach(function (r) { %>
+            <tr>
+              <td data-label="">
+                <a class="row-link" href="/admin/requests/<%= r.id %>">#<%= r.id %> &middot; <%= serviceLabel(r.type) %></a>
+                <% if (r.priority === 'urgent') { %> <span class="chip chip--red"><%- icon('alert', 'icon--sm') %>Urgent</span><% } %>
+                <% if (r.location_details) { %><div class="muted small"><%= r.location_details %></div><% } %>
+              </td>
+              <td data-label="Client"><strong><%= r.property_name %></strong><div class="muted small"><%= r.org_name %></div></td>
+              <td data-label="Submitted" class="nowrap"><%= fmtDateTime(r.created_at) %></td>
+              <td data-label="Preferred" class="nowrap"><%= r.preferred_date ? fmtDate(r.preferred_date) : 'ASAP' %></td>
+              <td data-label="Status"><%- statusBadge(r.status) %></td>
+              <td data-label=""><a class="btn btn--sm <%= r.status === 'submitted' ? '' : 'btn--outline' %>" href="/admin/requests/<%= r.id %><%= r.status === 'submitted' ? '#schedule' : '' %>"><%= r.status === 'submitted' ? 'Schedule' : 'View' %></a></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</div>
+<%- include('../partials/app-end') %>
