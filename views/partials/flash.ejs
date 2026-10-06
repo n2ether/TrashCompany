@@ -1,0 +1,15 @@
+<% if (flash) { %>
+  <div class="alert alert--<%= flash.type === 'error' ? 'error' : flash.type === 'info' ? 'info' : 'success' %>" role="<%= flash.type === 'error' ? 'alert' : 'status' %>">
+    <%- icon(flash.type === 'error' ? 'alert' : flash.type === 'info' ? 'info' : 'checkCircle') %>
+    <div><%= flash.message %></div>
+  </div>
+<% } %>
+<% if (typeof errors !== 'undefined' && errors && errors.length) { %>
+  <div class="alert alert--error" role="alert" tabindex="-1" data-autofocus>
+    <%- icon('alert') %>
+    <div>
+      <strong>Please fix the following:</strong>
+      <ul><% errors.forEach(function (e) { %><li><%= e %></li><% }) %></ul>
+    </div>
+  </div>
+<% } %>

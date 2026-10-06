@@ -1,0 +1,30 @@
+<%- include('../partials/app-start') %>
+<div class="page-head">
+  <div><h1>Service schedule</h1><p>Past week and the next three weeks for your properties.</p></div>
+  <form class="filters mb-0" method="get" action="/portal/schedule">
+    <div class="field">
+      <label for="property">Property</label>
+      <select id="property" name="property" onchange="this.form.submit()">
+        <option value="">All properties</option>
+        <% properties.forEach(function (p) { %><option value="<%= p.id %>" <%= propertyId === p.id ? 'selected' : '' %>><%= p.name %></option><% }) %>
+      </select>
+    </div>
+    <noscript><button class="btn" type="submit">Filter</button></noscript>
+  </form>
+</div>
+
+<% const dates = Object.keys(days); %>
+<% if (!dates.length) { %>
+  <div class="card"><div class="empty"><%- icon('calendar') %><h3>No services scheduled</h3><p>Once we schedule service for your properties it will appear here.</p></div></div>
+<% } %>
+<div class="grid-2">
+  <% dates.forEach(function (d) { %>
+    <section class="card<%= d === today ? ' card--accent' : '' %>" <%- d === today ? 'id="today"' : '' %>>
+      <div class="card__head"><h2 style="font-size:1.15rem"><%= d === today ? 'Today, ' : '' %><%= fmtLongDate(d) %></h2><span class="muted small"><%= days[d].length %> service<%= days[d].length === 1 ? '' : 's' %></span></div>
+      <% days[d].forEach(function (job) { %>
+        <%- include('../partials/job-card', { job: job, href: job.request_id ? '/portal/requests/' + job.request_id : '#today', showCrew: true }) %>
+      <% }) %>
+    </section>
+  <% }) %>
+</div>
+<%- include('../partials/app-end') %>

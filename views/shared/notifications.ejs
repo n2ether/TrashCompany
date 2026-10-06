@@ -1,0 +1,29 @@
+<%- include('../partials/app-start') %>
+<div class="page-head">
+  <div>
+    <h1>Notifications</h1>
+    <p>Assignments, status changes, and messages. Each one is also sent to <strong><%= user.email %></strong>.</p>
+  </div>
+  <% if (items.some(function (n) { return !n.read; })) { %>
+    <form method="post" action="/notifications/read-all">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button class="btn btn--outline" type="submit"><%- icon('check') %> Mark all as read</button>
+    </form>
+  <% } %>
+</div>
+<div class="card card--flush">
+  <% if (!items.length) { %>
+    <div class="empty"><%- icon('bell') %><h3>You're all caught up</h3><p>New notifications will appear here.</p></div>
+  <% } %>
+  <% items.forEach(function (n) { %>
+    <a class="notice-item<%= n.read ? '' : ' notice-item--unread' %>" href="/notifications/<%= n.id %>/open">
+      <span class="stat__icon"><%- icon(n.read ? 'bell' : 'inbox') %></span>
+      <span style="min-width:0;flex:1">
+        <span class="notice-item__title"><%= n.title %><% if (!n.read) { %> <span class="sr-only">(unread)</span><% } %></span>
+        <% if (n.body) { %><span class="notice-item__body" style="display:block"><%= n.body %></span><% } %>
+        <span class="muted small"><%= fmtDateTime(n.created_at) %></span>
+      </span>
+    </a>
+  <% }) %>
+</div>
+<%- include('../partials/app-end') %>

@@ -1,0 +1,94 @@
+<%- include('../partials/app-start') %>
+<div class="page-head">
+  <div>
+    <div class="breadcrumb"><a href="/portal/requests">Requests</a> <%- icon('chevronRight', 'icon--sm') %> New</div>
+    <h1>Request service</h1>
+    <p>Three quick steps. We'll confirm the date and crew, and you'll be notified at every step.</p>
+  </div>
+</div>
+
+<% if (!properties.length) { %>
+  <div class="card"><div class="empty"><%- icon('building') %><h3>Add a property first</h3><p>We need to know where to send our crew.</p><a class="btn" href="/portal/properties/new">Add a property</a></div></div>
+<% } else { %>
+<form class="card" method="post" action="/portal/requests" novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+  <fieldset class="form-section">
+    <legend class="sr-only">Service type</legend>
+    <h2><span class="step-num">1</span> What do you need?</h2>
+    <div class="type-picker">
+      <% Object.keys(SERVICE_TYPES).forEach(function (key) { const t = SERVICE_TYPES[key]; %>
+        <label class="type-option">
+          <input type="radio" name="type" value="<%= key %>" <%= form.type === key ? 'checked' : '' %> required>
+          <span class="type-option__body">
+            <span class="type-option__icon"><%- icon(t.icon) %></span>
+            <span><span class="type-option__title"><%= t.label %></span><span class="type-option__blurb"><%= t.blurb %></span></span>
+          </span>
+        </label>
+      <% }) %>
+    </div>
+  </fieldset>
+
+  <div class="form-section">
+    <h2><span class="step-num">2</span> Where?</h2>
+    <div class="form-grid">
+      <div class="field">
+        <label for="property_id">Property <span class="req" aria-hidden="true">*</span></label>
+        <select id="property_id" name="property_id" required>
+          <% properties.forEach(function (p) { %><option value="<%= p.id %>" <%= form.property_id === p.id ? 'selected' : '' %>><%= p.name %>, <%= p.address %></option><% }) %>
+        </select>
+      </div>
+      <div class="field">
+        <label for="location_details">Building, unit, or area</label>
+        <input id="location_details" name="location_details" type="text" placeholder="e.g. Building 4 dumpster, Unit B214, clubhouse" value="<%= form.location_details || '' %>">
+      </div>
+      <div class="field" data-show-for="bulk_removal,trash_out,other">
+        <label for="quantity">Approximate number of items</label>
+        <input id="quantity" name="quantity" type="number" min="1" inputmode="numeric" value="<%= form.quantity || '' %>">
+        <span class="hint">Count each large piece, like a sofa or mattress, as one item.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <h2><span class="step-num">3</span> When &amp; details</h2>
+    <div class="form-grid">
+      <fieldset class="field span-2">
+        <legend>Priority</legend>
+        <div class="check-row">
+          <% Object.keys(PRIORITIES).forEach(function (k) { %>
+            <label class="check"><input type="radio" name="priority" value="<%= k %>" <%= form.priority === k ? 'checked' : '' %>> <%= PRIORITIES[k] %></label>
+          <% }) %>
+        </div>
+      </fieldset>
+      <div class="field">
+        <label for="preferred_date">Preferred date</label>
+        <input id="preferred_date" name="preferred_date" type="date" min="<%= minDate %>" value="<%= form.preferred_date || '' %>">
+        <span class="hint">Leave blank for the next available.</span>
+      </div>
+      <div class="field">
+        <label for="preferred_window">Preferred time</label>
+        <select id="preferred_window" name="preferred_window">
+          <% WINDOWS.forEach(function (w) { %><option <%= form.preferred_window === w ? 'selected' : '' %>><%= w %></option><% }) %>
+        </select>
+      </div>
+      <div class="field" data-show-for="common_area,pet_station,enclosure,valet_trash">
+        <label for="frequency">How often?</label>
+        <select id="frequency" name="frequency">
+          <% Object.keys(FREQUENCIES).forEach(function (k) { %><option value="<%= k %>" <%= form.frequency === k ? 'selected' : '' %>><%= FREQUENCIES[k] %></option><% }) %>
+        </select>
+      </div>
+      <div class="field span-2">
+        <label for="description">Description</label>
+        <textarea id="description" name="description" placeholder="What should the crew know? Include gate codes or contacts if they differ from your property notes."><%= form.description || '' %></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn--gold btn--lg" type="submit"><%- icon('send') %> Submit request</button>
+    <a class="btn btn--ghost btn--lg" href="/portal">Cancel</a>
+  </div>
+</form>
+<% } %>
+<%- include('../partials/app-end') %>

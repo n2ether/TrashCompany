@@ -1,0 +1,110 @@
+<%- include('../partials/app-start') %>
+<div class="page-head">
+  <div>
+    <h1>Welcome back, <%= user.name.split(' ')[0] %></h1>
+    <p><%= fmtLongDate(today) %> &middot; <%= user.org_name %></p>
+  </div>
+  <a class="btn btn--gold btn--lg" href="/portal/requests/new"><%- icon('plus') %> Request service</a>
+</div>
+
+<h2 class="sr-only">Quick requests</h2>
+<div class="quick-actions">
+  <a class="quick-action quick-action--urgent" href="/portal/requests/new?type=missed_pickup"><span class="type-option__icon"><%- icon('rotate') %></span><span>Report missed pickup<small>We send a valet back</small></span></a>
+  <a class="quick-action" href="/portal/requests/new?type=bulk_removal"><span class="type-option__icon"><%- icon('truck') %></span><span>Bulk item removal<small>Furniture &amp; debris</small></span></a>
+  <a class="quick-action" href="/portal/requests/new?type=common_area"><span class="type-option__icon"><%- icon('sparkles') %></span><span>Common area cleanup<small>Lobbies, halls, amenities</small></span></a>
+  <a class="quick-action" href="/portal/requests/new?type=trash_out"><span class="type-option__icon"><%- icon('door') %></span><span>Unit trash-out<small>Move-out clean-outs</small></span></a>
+</div>
+
+<div class="stats">
+  <div class="stat"><span class="stat__icon"><%- icon('building') %></span><div><div class="stat__value"><%= stats.doors.toLocaleString() %></div><div class="stat__label">Doors serviced across <%= properties.length %> <%= properties.length === 1 ? 'property' : 'properties' %></div></div></div>
+  <a class="stat" href="/portal/requests"><span class="stat__icon stat__icon--gold"><%- icon('clipboard') %></span><div><div class="stat__value"><%= stats.open %></div><div class="stat__label">Open requests</div></div></a>
+  <div class="stat"><span class="stat__icon stat__icon--green"><%- icon('checkCircle') %></span><div><div class="stat__value"><%= stats.completed30 %></div><div class="stat__label">Services completed (30 days)</div></div></div>
+  <a class="stat" href="/portal/account?tab=billing"><span class="stat__icon"><%- icon('receipt') %></span><div><div class="stat__value"><%= fmtMoney(stats.balance) %></div><div class="stat__label">Open balance</div></div></a>
+</div>
+
+<div class="grid-main">
+  <div>
+    <section class="card">
+      <div class="card__head"><h2>Coming up this week</h2><a class="btn btn--ghost btn--sm" href="/portal/schedule">Full schedule <%- icon('chevronRight', 'icon--sm') %></a></div>
+      <% if (!upcoming.length) { %>
+        <div class="empty"><%- icon('calendar') %><h3>Nothing scheduled</h3><p>Upcoming services for your properties will show here.</p></div>
+      <% } else { %>
+        <ul class="list">
+          <% upcoming.slice(0, 8).forEach(function (j) { %>
+            <li class="list-item">
+              <div class="list-item__main">
+                <span class="list-item__title"><%= relativeDay(j.scheduled_date) %> &middot; <%= j.property_name %></span>
+                <div class="list-item__meta">
+                  <span><%- typeChip(j.type) %></span>
+                  <span><%- icon('clock', 'icon--sm') %> <%= j.start_time ? fmtTime(j.start_time) + (j.end_time ? ' – ' + fmtTime(j.end_time) : '') : 'Time TBD' %></span>
+                  <span><%- icon('shield', 'icon--sm') %> <%= j.supervisor_name || 'Crew TBD' %></span>
+                </div>
+              </div>
+              <%- statusBadge(j.status) %>
+            </li>
+          <% }) %>
+        </ul>
+        <% if (upcoming.length > 8) { %><p class="muted small mb-0">+ <%= upcoming.length - 8 %> more this week</p><% } %>
+      <% } %>
+    </section>
+
+    <section class="card">
+      <div class="card__head"><h2>Open requests</h2><a class="btn btn--ghost btn--sm" href="/portal/requests">All requests <%- icon('chevronRight', 'icon--sm') %></a></div>
+      <% if (!openRequests.length) { %>
+        <div class="empty"><%- icon('checkCircle') %><h3>No open requests</h3><p>Need something handled? <a href="/portal/requests/new">Request service</a>.</p></div>
+      <% } else { %>
+        <ul class="list">
+          <% openRequests.forEach(function (r) { %>
+            <li class="list-item">
+              <div class="list-item__main">
+                <a class="list-item__title" href="/portal/requests/<%= r.id %>">#<%= r.id %> &middot; <%= serviceLabel(r.type) %></a>
+                <div class="list-item__meta">
+                  <span><%- icon('building', 'icon--sm') %> <%= r.property_name %></span>
+                  <% if (r.scheduled_date) { %><span><%- icon('calendar', 'icon--sm') %> <%= fmtDate(r.scheduled_date) %><%= r.scheduled_time ? ', ' + fmtTime(r.scheduled_time) : '' %></span><% } %>
+                  <% if (r.priority === 'urgent') { %><span class="chip chip--red"><%- icon('alert', 'icon--sm') %>Urgent</span><% } %>
+                </div>
+              </div>
+              <%- statusBadge(r.status) %>
+            </li>
+          <% }) %>
+        </ul>
+      <% } %>
+    </section>
+  </div>
+
+  <aside>
+    <section class="card">
+      <div class="card__head"><h2>Your properties</h2><a class="btn btn--ghost btn--sm" href="/portal/properties">Manage</a></div>
+      <ul class="list">
+        <% properties.forEach(function (p) { %>
+          <li>
+            <span class="list-item__title"><%= p.name %></span>
+            <div class="list-item__meta">
+              <span><%- icon('mapPin', 'icon--sm') %> <%= p.city %><%= p.state ? ', ' + p.state : '' %></span>
+              <span><%- icon('door', 'icon--sm') %> <%= p.units %> units</span>
+            </div>
+            <div class="list-item__meta"><span><%- icon('calendar', 'icon--sm') %> <%= p.service_nights ? p.service_nights.split(',').join(' · ') : 'On-demand services' %></span></div>
+          </li>
+        <% }) %>
+      </ul>
+    </section>
+    <section class="card">
+      <h2 style="font-size:1.25rem">Recently completed</h2>
+      <% if (!recent.length) { %><p class="muted mb-0">Completed services will appear here.</p><% } %>
+      <ul class="list">
+        <% recent.forEach(function (j) { %>
+          <li>
+            <span class="list-item__title"><%= j.property_name %></span>
+            <div class="list-item__meta"><span><%- typeChip(j.type) %></span><span><%= fmtDate(j.scheduled_date) %></span></div>
+            <% if (j.completion_notes) { %><p class="small mb-0 mt-0" style="margin-top:.35rem"><%= j.completion_notes %></p><% } %>
+          </li>
+        <% }) %>
+      </ul>
+    </section>
+    <section class="card card--accent">
+      <h2 style="font-size:1.15rem"><%- icon('heart') %> Thank you for serving with us</h2>
+      <p class="mb-0">A portion of Valor Valet's profits supports housing programs for homeless veterans. Your partnership is part of that mission.</p>
+    </section>
+  </aside>
+</div>
+<%- include('../partials/app-end') %>

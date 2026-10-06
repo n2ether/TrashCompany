@@ -1,0 +1,109 @@
+<%- include('../partials/app-start') %>
+<%
+  const w = r.preferred_window || '';
+  const times = w.startsWith('Afternoon') ? ['13:00', '15:00'] : w.startsWith('Evening') ? ['19:00', '21:00'] : ['09:00', '11:00'];
+  const open = !['completed', 'cancelled'].includes(r.status);
+%>
+<div class="page-head">
+  <div>
+    <div class="breadcrumb"><a href="/admin/requests">Requests</a> <%- icon('chevronRight', 'icon--sm') %> #<%= r.id %></div>
+    <h1><%= serviceLabel(r.type) %> <% if (r.priority === 'urgent') { %><span class="chip chip--red" style="vertical-align:middle"><%- icon('alert', 'icon--sm') %>Urgent</span><% } %></h1>
+    <p><%= r.org_name %> &middot; <%= r.property_name %></p>
+  </div>
+  <%- statusBadge(r.status) %>
+</div>
+
+<div class="grid-main">
+  <div>
+    <section class="card">
+      <h2 style="font-size:1.25rem">Request</h2>
+      <dl class="dl">
+        <dt>Location</dt><dd><%= r.location_details || '—' %></dd>
+        <dt>Description</dt><dd style="white-space:pre-line"><%= r.description || '—' %></dd>
+        <% if (r.quantity) { %><dt>Items</dt><dd><%= r.quantity %></dd><% } %>
+        <dt>Preferred</dt><dd><%= r.preferred_date ? fmtLongDate(r.preferred_date) : 'Next available' %><%= r.preferred_window ? ' · ' + r.preferred_window : '' %></dd>
+        <dt>Frequency</dt><dd><%= FREQUENCIES[r.frequency] || 'One time' %></dd>
+        <dt>Submitted</dt><dd><%= fmtDateTime(r.created_at) %> by <%= r.requester_name || 'client' %></dd>
+      </dl>
+    </section>
+
+    <% if (open) { %>
+    <form class="card card--accent" id="schedule" method="post" action="/admin/requests/<%= r.id %>/schedule">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="card__head"><h2><%- icon('calendar') %> <%= jobs.length ? 'Schedule another visit' : 'Schedule this request' %></h2></div>
+      <div class="form-grid mb-2">
+        <div class="field span-2"><label for="title">Job title</label><input id="title" name="title" type="text" required value="<%= serviceLabel(r.type) %> — <%= r.property_name %>"></div>
+        <div class="field"><label for="scheduled_date">Date</label><input id="scheduled_date" name="scheduled_date" type="date" required value="<%= defaultDate %>"></div>
+        <div class="field"><label for="start_time">Start</label><input id="start_time" name="start_time" type="time" value="<%= times[0] %>"></div>
+        <div class="field"><label for="end_time">End</label><input id="end_time" name="end_time" type="time" value="<%= times[1] %>"></div>
+      </div>
+      <%- include('../partials/crew-fields', { selected: null }) %>
+      <div class="field mt-2"><label for="instructions">Crew instructions</label><textarea id="instructions" name="instructions" placeholder="Equipment, safety notes, what &quot;done&quot; looks like"><%= r.description || '' %></textarea></div>
+      <label class="check mt-2"><input type="checkbox" name="dispatch_now" value="1" checked> Forward to supervisor &amp; technicians now (email + crew app)</label>
+      <div class="btn-row mt-2"><button class="btn btn--gold btn--lg" type="submit"><%- icon('send') %> Schedule job</button></div>
+    </form>
+    <% } %>
+
+    <section class="card" id="activity">
+      <h2 style="font-size:1.25rem">Activity &amp; client messages</h2>
+      <ol class="timeline">
+        <% activity.forEach(function (a) { %>
+          <li>
+            <span class="timeline__dot<%= a.kind === 'comment' ? ' timeline__dot--comment' : '' %>"><%- icon(a.kind === 'comment' ? 'mail' : 'check', 'icon--sm') %></span>
+            <span class="timeline__who"><%= a.user_name || 'System' %></span> <% if (a.user_role) { %><span class="muted small">(<%= ROLES[a.user_role] %>)</span><% } %>
+            <span class="timeline__when"> &middot; <%= fmtDateTime(a.created_at) %></span>
+            <p class="timeline__msg"><%= a.message %></p>
+          </li>
+        <% }) %>
+      </ol>
+      <form method="post" action="/admin/requests/<%= r.id %>/comment">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="field mb-2"><label for="message">Message the client</label><textarea id="message" name="message" required></textarea><span class="hint">The client is notified by email and in their portal.</span></div>
+        <button class="btn" type="submit"><%- icon('send') %> Send</button>
+      </form>
+    </section>
+  </div>
+
+  <aside>
+    <% if (jobs.length) { %>
+      <section class="card">
+        <h2 style="font-size:1.2rem">Scheduled jobs</h2>
+        <% jobs.forEach(function (job) { %>
+          <div class="small muted" style="margin-top:.5rem"><%= fmtLongDate(job.scheduled_date) %></div>
+          <%- include('../partials/job-card', { job: job, href: '/admin/jobs/' + job.id }) %>
+        <% }) %>
+      </section>
+    <% } %>
+    <section class="card">
+      <h2 style="font-size:1.2rem">Client contact</h2>
+      <p class="mb-0"><strong><%= r.requester_name || '—' %></strong><br>
+        <% if (r.requester_email) { %><a href="mailto:<%= r.requester_email %>"><%= r.requester_email %></a><br><% } %>
+        <% if (r.requester_phone) { %><a href="tel:<%= r.requester_phone %>"><%= r.requester_phone %></a><% } %>
+      </p>
+    </section>
+    <section class="card">
+      <h2 style="font-size:1.2rem">Property access</h2>
+      <p><%- icon('mapPin', 'icon--sm') %> <%= property.address %>, <%= property.city %> <%= property.state %> <%= property.zip %></p>
+      <p class="small"><strong>Onsite:</strong> <%= property.onsite_contact || '—' %></p>
+      <p class="small mb-0"><strong>Access:</strong> <%= property.access_notes || '—' %></p>
+    </section>
+    <% if (open) { %>
+      <section class="card">
+        <h2 style="font-size:1.2rem">Already booked <%= relativeDay(defaultDate).toLowerCase() === 'today' || relativeDay(defaultDate).toLowerCase() === 'tomorrow' ? relativeDay(defaultDate).toLowerCase() : 'on ' + fmtDate(defaultDate) %></h2>
+        <% if (!sameDay.length) { %><p class="muted mb-0">Open calendar.</p><% } %>
+        <ul class="list">
+          <% sameDay.forEach(function (j) { %>
+            <li><span class="list-item__title small"><%= fmtTime(j.start_time) %> &middot; <%= j.property_name %></span><div class="list-item__meta"><span><%= j.supervisor_name %></span><span><%= j.technician_names %></span></div></li>
+          <% }) %>
+        </ul>
+      </section>
+      <form class="card" method="post" action="/admin/requests/<%= r.id %>/status" data-confirm="Cancel this request and any scheduled jobs?">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <input type="hidden" name="status" value="cancelled">
+        <div class="field mb-2"><label for="note">Cancellation note (sent to client)</label><input id="note" name="note" type="text"></div>
+        <button class="btn btn--danger btn--block" type="submit"><%- icon('x') %> Cancel request</button>
+      </form>
+    <% } %>
+  </aside>
+</div>
+<%- include('../partials/app-end') %>

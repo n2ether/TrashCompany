@@ -1,0 +1,43 @@
+<%- include('../partials/app-start') %>
+<div class="page-head"><div><h1>Fulfillment team</h1><p>Supervisors lead crews in the field; technicians perform the service.</p></div></div>
+<div class="grid-main">
+  <section class="card card--flush">
+    <div class="table-wrap">
+      <table class="table table--stack">
+        <thead><tr><th>Name</th><th>Role</th><th>Contact</th><th>Upcoming jobs</th><th><span class="sr-only">Actions</span></th></tr></thead>
+        <tbody>
+          <% members.forEach(function (m) { %>
+            <tr>
+              <td data-label=""><span class="user-chip" style="padding:0"><span class="avatar avatar--sm"><%= initials(m.name) %></span><span><strong><%= m.name %></strong><br><span class="muted small"><%= m.title || '' %></span></span></span></td>
+              <td data-label="Role"><span class="chip chip--<%= m.role === 'supervisor' ? 'navy' : m.role === 'admin' ? 'amber' : 'slate' %>"><%= ROLES[m.role] %></span></td>
+              <td data-label="Contact" class="small"><%= m.email %><br><%= m.phone || '' %></td>
+              <td data-label="Upcoming"><%= m.upcoming %></td>
+              <td data-label="">
+                <% if (m.id !== user.id) { %>
+                  <form method="post" action="/admin/team/<%= m.id %>/toggle" data-confirm="<%= m.active ? 'Deactivate' : 'Reactivate' %> <%= m.name %>?">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button class="btn btn--sm <%= m.active ? 'btn--ghost' : 'btn--outline' %>" type="submit"><%= m.active ? 'Deactivate' : 'Reactivate' %></button>
+                  </form>
+                <% } %>
+                <% if (!m.active) { %><span class="badge badge--muted">Inactive</span><% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <form class="card" method="post" action="/admin/team">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <h2 style="font-size:1.2rem">Add a team member</h2>
+    <div class="field mb-2"><label for="m-name">Full name</label><input id="m-name" name="name" type="text" required></div>
+    <div class="field mb-2"><label for="m-email">Email</label><input id="m-email" name="email" type="email" required></div>
+    <div class="field mb-2"><label for="m-phone">Mobile phone</label><input id="m-phone" name="phone" type="tel"></div>
+    <div class="field mb-2"><label for="m-title">Title</label><input id="m-title" name="title" type="text" placeholder="Service Technician"></div>
+    <div class="field mb-3"><label for="m-role">Role</label>
+      <select id="m-role" name="role"><option value="technician">Service Technician</option><option value="supervisor">Field Supervisor</option><option value="admin">Administrator</option></select>
+    </div>
+    <button class="btn btn--block" type="submit"><%- icon('plus') %> Add &amp; send invite</button>
+  </form>
+</div>
+<%- include('../partials/app-end') %>

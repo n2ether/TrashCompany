@@ -1,0 +1,48 @@
+</main>
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <%- include('brand', { light: true }) %>
+        <p class="mt-2"><%= COMPANY.tagline %>. Veteran-led crews, documented service, and a property manager portal that keeps everything in one place.</p>
+        <p class="mb-0"><a href="tel:+18005550142"><%= COMPANY.phone %></a><br><a href="mailto:<%= COMPANY.email %>"><%= COMPANY.email %></a></p>
+      </div>
+      <div>
+        <h4>Services</h4>
+        <ul>
+          <li><a href="/services#valet-trash">Doorstep Valet Trash</a></li>
+          <li><a href="/services#common-area">Common Area Cleanup</a></li>
+          <li><a href="/services#bulk">Bulk &amp; Trash-Outs</a></li>
+          <li><a href="/services#pet">Pet Waste Stations</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Company</h4>
+        <ul>
+          <li><a href="/mission">Our Mission</a></li>
+          <li><a href="/how-it-works">How It Works</a></li>
+          <li><a href="/contact">Request a Quote</a></li>
+          <li><a href="/style-guide">Accessibility &amp; Style Guide</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Portals</h4>
+        <ul>
+          <li><a href="/login">Client Login</a></li>
+          <li><a href="/register">Create Client Account</a></li>
+          <li><a href="/login">Crew Login</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-pledge">
+      <%- icon('heart', 'icon--lg') %>
+      <p class="mb-0"><strong>Our pledge:</strong> a portion of our profits goes to programs that house homeless veterans. Every community we serve helps a veteran find a place to call home.</p>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; <%= new Date().getFullYear() %> <%= COMPANY.legalName %>. A Disabled Veteran Owned Small Business (DVOSB).</span>
+      <span>Licensed &amp; insured &middot; Background-checked crews</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

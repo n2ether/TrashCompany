@@ -1,0 +1,43 @@
+<%- include('../partials/app-start') %>
+<div class="page-head">
+  <div><h1>Daily run sheet</h1><p><%= fmtLongDate(date) %> &middot; <%= jobs.length %> job<%= jobs.length === 1 ? '' : 's' %></p></div>
+  <div class="btn-row no-print">
+    <a class="btn btn--outline" href="/admin/schedule/day?date=<%= prev %>"><%- icon('chevronLeft') %> Previous day</a>
+    <a class="btn btn--outline" href="/admin/schedule/day?date=<%= next %>">Next day <%- icon('chevronRight') %></a>
+    <button class="btn btn--outline" type="button" data-print><%- icon('printer') %> Print</button>
+    <% if (jobs.some(function (j) { return j.status === 'scheduled'; })) { %>
+      <form method="post" action="/admin/schedule/dispatch">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="date" value="<%= date %>"><input type="hidden" name="return_to" value="/admin/schedule/day?date=<%= date %>">
+        <button class="btn btn--gold" type="submit"><%- icon('send') %> Forward to crews</button>
+      </form>
+    <% } %>
+  </div>
+</div>
+
+<% if (!jobs.length) { %><div class="card"><div class="empty"><%- icon('calendar') %><h3>No jobs this day</h3><a class="btn mt-2" href="/admin/jobs/new?date=<%= date %>">Create a job</a></div></div><% } %>
+
+<% Object.keys(bySupervisor).forEach(function (name) { const group = bySupervisor[name]; %>
+  <section class="card">
+    <div class="card__head">
+      <h2><%- icon('shield') %> <%= name %></h2>
+      <span class="muted"><%= group.phone || '' %> &middot; <%= group.jobs.length %> job<%= group.jobs.length === 1 ? '' : 's' %></span>
+    </div>
+    <div class="table-wrap">
+      <table class="table table--stack">
+        <thead><tr><th>Time</th><th>Job &amp; location</th><th>Crew</th><th>Access &amp; instructions</th><th>Status</th></tr></thead>
+        <tbody>
+          <% group.jobs.forEach(function (j) { %>
+            <tr>
+              <td data-label="Time" class="nowrap"><strong><%= fmtTime(j.start_time) || 'Any' %></strong><%= j.end_time ? ' – ' + fmtTime(j.end_time) : '' %></td>
+              <td data-label=""><a class="row-link" href="/admin/jobs/<%= j.id %>"><%= j.title %></a><div class="small"><%= j.address %>, <%= j.city %> <%= j.state %></div><div class="mt-0"><%- typeChip(j.type) %></div></td>
+              <td data-label="Crew"><%= j.technician_names || '—' %></td>
+              <td data-label="Access" class="small"><%= j.access_notes || '' %><% if (j.instructions) { %><br><strong>Do:</strong> <%= j.instructions %><% } %></td>
+              <td data-label="Status"><%- statusBadge(j.status) %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+<% }) %>
+<%- include('../partials/app-end') %>

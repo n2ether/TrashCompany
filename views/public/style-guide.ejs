@@ -1,0 +1,139 @@
+<%- include('../partials/public-header') %>
+<%
+  function lum(hex) {
+    const c = hex.replace('#', '').match(/../g).map(function (h) {
+      const v = parseInt(h, 16) / 255;
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  }
+  function ratio(a, b) {
+    const x = lum(a), y = lum(b);
+    return ((Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05)).toFixed(1);
+  }
+  const palette = [
+    { name: 'Navy 800', token: '--navy-800', hex: '#13294b', fg: '#ffffff', use: 'Primary brand, buttons, headings' },
+    { name: 'Navy 900', token: '--navy-900', hex: '#0b1f3a', fg: '#ffffff', use: 'Sidebar, hero, heading text' },
+    { name: 'Navy 600', token: '--navy-600', hex: '#24508f', fg: '#ffffff', use: 'Links, focus rings' },
+    { name: 'Honor Gold 500', token: '--gold-500', hex: '#f2b33d', fg: '#08162b', use: 'Call-to-action fills with navy text. Never used as text on white.' },
+    { name: 'Flag Red 600', token: '--red-600', hex: '#b3261e', fg: '#ffffff', use: 'Urgent, errors, missed pickups' },
+    { name: 'Field Green 700', token: '--green-700', hex: '#1e6b3f', fg: '#ffffff', use: 'Success, completed' },
+    { name: 'Ink', token: '--ink', hex: '#15202e', fg: '#ffffff', use: 'Body text' },
+    { name: 'Ink 2', token: '--ink-2', hex: '#3a4657', fg: '#ffffff', use: 'Secondary text' },
+    { name: 'Ink 3', token: '--ink-3', hex: '#5b6778', fg: '#ffffff', use: 'Meta text, hints' },
+  ];
+%>
+
+<section class="page-hero">
+  <div class="container">
+    <span class="eyebrow eyebrow--gold"><%- icon('palette', 'icon--sm') %> Design system</span>
+    <h1>Brand, accessibility &amp; UX style guide</h1>
+    <p class="lead">The color, type, and interaction rules behind every Valor Valet screen, designed so property managers, crews working at night, and veterans with visual or motor disabilities can all read and use them easily.</p>
+  </div>
+</section>
+
+<section class="section section--white">
+  <div class="container">
+    <h2>Industry research: what works</h2>
+    <p class="lead">We reviewed leading valet trash and multifamily service providers (Valet Living, Butler Plus / Trash Butler, and regional operators) and their client portals. These patterns shaped our design:</p>
+    <div class="grid-3 mt-3">
+      <div class="card"><h3><%- icon('rotate') %> "Comeback" requests</h3><p class="mb-0">Missed pickups are the #1 support issue. We made <strong>Report Missed Pickup</strong> a permanent button in the client sidebar.</p></div>
+      <div class="card"><h3><%- icon('clipboard') %> Status transparency</h3><p class="mb-0">Competitor portals lead with service status and audit trails. Every request shows a 5-step tracker and a full activity timeline.</p></div>
+      <div class="card"><h3><%- icon('truck') %> One-click bulk orders</h3><p class="mb-0">Bulk removal is a top-requested add-on. Service types are large visual cards, so requesting takes under a minute.</p></div>
+      <div class="card"><h3><%- icon('dollar') %> Per-door pricing</h3><p class="mb-0">The industry quotes per unit per month, typically 5 nights (Sun–Thu). Our pricing and quote form use the same language.</p></div>
+      <div class="card"><h3><%- icon('users') %> Team self-service</h3><p class="mb-0">Managers want to add and remove their own staff. Clients invite teammates from Account &gt; Team.</p></div>
+      <div class="card"><h3><%- icon('shield') %> Trust signals up front</h3><p class="mb-0">Background-checked crews, insurance, and documentation appear above the fold, alongside our DVOSB status.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h2>Color palette</h2>
+    <p class="lead">Patriotic but restrained: deep navy for trust, honor gold for action, and flag red only for urgency. Every text pairing meets WCAG AA (4.5:1); body text meets AAA (7:1).</p>
+    <div class="grid-3 mt-3">
+      <% palette.forEach(function (c) { %>
+        <div class="swatch">
+          <div class="swatch__color" style="background:<%= c.hex %>;color:<%= c.fg %>">Aa <%= ratio(c.hex, c.fg) %>:1</div>
+          <div class="swatch__info">
+            <strong><%= c.name %></strong> &middot; <code><%= c.hex %></code><br>
+            <span class="muted"><%= c.use %></span><br>
+            <span class="small">On white: <strong><%= ratio(c.hex, '#ffffff') %>:1</strong></span>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<section class="section section--white">
+  <div class="container">
+    <h2>Typography</h2>
+    <div class="grid-2 mt-3">
+      <div class="card">
+        <span class="eyebrow">Body &amp; UI</span>
+        <p style="font-size:2rem;font-weight:700;margin:0">Atkinson Hyperlegible</p>
+        <p>Created by the Braille Institute for low-vision readers. Distinct letterforms (Il1, O0, rn/m) prevent misreading of gate codes, unit numbers, and addresses.</p>
+        <p class="mb-0 muted">Base size 17px &middot; line height 1.6 &middot; max line length ~70 characters</p>
+      </div>
+      <div class="card">
+        <span class="eyebrow">Headings</span>
+        <p style="font-family:var(--font-head);font-size:2rem;font-weight:800;margin:0;color:var(--navy-900)">Barlow Bold</p>
+        <p>A sturdy, slightly condensed grotesque with a utilitarian, military-signage feel. Used only for headings, numbers, and the brand name.</p>
+        <p class="mb-0 muted">Weights 600 / 700 / 800 &middot; fluid sizes from 1.3rem to 3.25rem</p>
+      </div>
+    </div>
+    <div class="card mt-3">
+      <h1 class="mb-2">Heading 1, page titles</h1>
+      <h2>Heading 2, section titles</h2>
+      <h3>Heading 3, card titles</h3>
+      <p class="lead">Lead paragraph text introduces a section in a slightly larger size.</p>
+      <p class="mb-0">Body text is set in Atkinson Hyperlegible at 17px with generous line height so long instructions, like access notes for a gated community, stay easy to scan.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h2>Components</h2>
+    <div class="grid-2 mt-3">
+      <div class="card">
+        <h3>Buttons (48px minimum touch target)</h3>
+        <div class="btn-row">
+          <button class="btn btn--gold" type="button">Primary action</button>
+          <button class="btn" type="button">Secondary</button>
+          <button class="btn btn--outline" type="button">Outline</button>
+          <button class="btn btn--danger" type="button">Destructive</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Statuses (icon + text, never color alone)</h3>
+        <div class="btn-row">
+          <% Object.keys(STATUSES).forEach(function (s) { %><%- statusBadge(s) %><% }) %>
+        </div>
+        <h3 class="mt-3">Service types</h3>
+        <div class="btn-row">
+          <% Object.keys(SERVICE_TYPES).forEach(function (t) { %><%- typeChip(t) %><% }) %>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Form fields</h3>
+        <div class="field mb-2"><label for="sg-1">Label above every field</label><input id="sg-1" type="text" placeholder="Placeholder is never the only label"><span class="hint">Hints sit below the field in plain language.</span></div>
+        <div class="alert alert--error mb-0"><%- icon('alert') %><div>Errors are announced, focused, and listed at the top of the form.</div></div>
+      </div>
+      <div class="card">
+        <h3>Accessibility checklist</h3>
+        <ul class="check-list mb-0">
+          <li><%- icon('checkCircle') %><span>Visible focus ring on every interactive element</span></li>
+          <li><%- icon('checkCircle') %><span>"Skip to main content" link on every page</span></li>
+          <li><%- icon('checkCircle') %><span>Semantic landmarks, labels, and ARIA states</span></li>
+          <li><%- icon('checkCircle') %><span>Responsive from 320px phones to wide desktops</span></li>
+          <li><%- icon('checkCircle') %><span>Respects reduced-motion preferences</span></li>
+          <li><%- icon('checkCircle') %><span>Printable daily run sheets for crews</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%- include('../partials/public-footer') %>

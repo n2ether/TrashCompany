@@ -1,0 +1,85 @@
+<%- include('../partials/app-start') %>
+<%
+  const order = ['submitted', 'scheduled', 'dispatched', 'in_progress', 'completed'];
+  const idx = order.indexOf(r.status);
+%>
+<div class="page-head">
+  <div>
+    <div class="breadcrumb"><a href="/portal/requests">Requests</a> <%- icon('chevronRight', 'icon--sm') %> #<%= r.id %></div>
+    <h1><%= serviceLabel(r.type) %></h1>
+    <p><%= r.property_name %><%= r.location_details ? ' · ' + r.location_details : '' %></p>
+  </div>
+  <%- statusBadge(r.status) %>
+</div>
+
+<% if (r.status === 'cancelled') { %>
+  <div class="alert alert--info"><%- icon('info') %><div>This request was cancelled.</div></div>
+<% } else { %>
+  <div class="card mb-3">
+    <ol class="stepper" aria-label="Request progress">
+      <% order.forEach(function (s, i) { %>
+        <li class="<%= i < idx || r.status === 'completed' ? 'done' : i === idx ? 'current' : '' %>" <%- i === idx ? 'aria-current="step"' : '' %>><span><%= STATUSES[s].label %></span></li>
+      <% }) %>
+    </ol>
+    <% if (jobs.length) { const j = jobs[0]; %>
+      <div class="alert alert--<%= j.status === 'completed' ? 'success' : 'info' %> mb-0">
+        <%- icon(j.status === 'completed' ? 'checkCircle' : 'calendar') %>
+        <div>
+          <strong><%= j.status === 'completed' ? 'Completed' : 'Scheduled' %> <%= fmtLongDate(j.scheduled_date) %><%= j.start_time ? ', ' + fmtTime(j.start_time) : '' %><%= j.end_time ? ' – ' + fmtTime(j.end_time) : '' %></strong><br>
+          Supervisor: <%= j.supervisor_name || 'To be assigned' %><%= j.supervisor_phone ? ' · ' + j.supervisor_phone : '' %>
+          <% if (j.completion_notes) { %><br>Crew notes: <%= j.completion_notes %><% } %>
+        </div>
+      </div>
+    <% } else { %>
+      <p class="mb-0 muted">Our operations team is reviewing your request and will confirm a date and crew shortly.</p>
+    <% } %>
+  </div>
+<% } %>
+
+<div class="grid-main">
+  <section class="card" id="activity">
+    <h2 style="font-size:1.25rem">Activity &amp; messages</h2>
+    <ol class="timeline">
+      <% activity.forEach(function (a) { %>
+        <li>
+          <span class="timeline__dot<%= a.kind === 'comment' ? ' timeline__dot--comment' : '' %>"><%- icon(a.kind === 'comment' ? 'mail' : 'check', 'icon--sm') %></span>
+          <span class="timeline__who"><%= a.user_name || 'Valor Valet' %></span>
+          <% if (a.user_role && a.user_role !== 'client') { %><span class="chip chip--navy">Valor Valet</span><% } %>
+          <span class="timeline__when"> &middot; <%= fmtDateTime(a.created_at) %></span>
+          <p class="timeline__msg"><%= a.message %></p>
+        </li>
+      <% }) %>
+    </ol>
+    <% if (r.status !== 'cancelled') { %>
+      <form method="post" action="/portal/requests/<%= r.id %>/comment">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="field mb-2"><label for="message">Send a message to our team</label><textarea id="message" name="message" required placeholder="Add details, change timing, or ask a question"></textarea></div>
+        <button class="btn" type="submit"><%- icon('send') %> Send message</button>
+      </form>
+    <% } %>
+  </section>
+
+  <aside>
+    <section class="card">
+      <h2 style="font-size:1.2rem">Request details</h2>
+      <dl class="dl">
+        <dt>Request</dt><dd>#<%= r.id %></dd>
+        <dt>Service</dt><dd><%- typeChip(r.type) %></dd>
+        <dt>Priority</dt><dd><%= r.priority === 'urgent' ? 'Urgent' : 'Standard' %></dd>
+        <dt>Frequency</dt><dd><%= FREQUENCIES[r.frequency] || 'One time' %></dd>
+        <dt>Preferred</dt><dd><%= r.preferred_date ? fmtDate(r.preferred_date) : 'Next available' %><%= r.preferred_window ? ', ' + r.preferred_window : '' %></dd>
+        <% if (r.quantity) { %><dt>Items</dt><dd><%= r.quantity %></dd><% } %>
+        <dt>Submitted</dt><dd><%= fmtDateTime(r.created_at) %><br><span class="muted small">by <%= r.requester_name || 'your team' %></span></dd>
+      </dl>
+      <% if (r.description) { %><h3 class="mt-3" style="font-size:1rem">Description</h3><p class="mb-0" style="white-space:pre-line"><%= r.description %></p><% } %>
+    </section>
+    <% if (r.status === 'submitted') { %>
+      <form class="card" method="post" action="/portal/requests/<%= r.id %>/cancel" data-confirm="Cancel this request?">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <p class="small muted">Not needed anymore? You can cancel until it's scheduled.</p>
+        <button class="btn btn--danger btn--block" type="submit"><%- icon('x') %> Cancel request</button>
+      </form>
+    <% } %>
+  </aside>
+</div>
+<%- include('../partials/app-end') %>

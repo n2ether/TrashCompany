@@ -1,0 +1,94 @@
+<%- include('../partials/app-start') %>
+<div class="page-head">
+  <div><h1>Operations dashboard</h1><p><%= fmtLongDate(today) %></p></div>
+  <div class="btn-row">
+    <a class="btn btn--outline" href="/admin/schedule/day?date=<%= today %>"><%- icon('printer') %> Today's run sheet</a>
+    <a class="btn btn--gold" href="/admin/jobs/new"><%- icon('plus') %> Create job</a>
+  </div>
+</div>
+
+<% if (stats.undispatchedToday) { %>
+  <div class="alert alert--warn">
+    <%- icon('alert') %>
+    <div style="flex:1"><strong><%= stats.undispatchedToday %> job<%= stats.undispatchedToday === 1 ? '' : 's' %> today <%= stats.undispatchedToday === 1 ? 'has' : 'have' %> not been sent to the crew.</strong> Supervisors and technicians won't see <%= stats.undispatchedToday === 1 ? 'it' : 'them' %> until dispatched.</div>
+    <form method="post" action="/admin/schedule/dispatch">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="date" value="<%= today %>"><input type="hidden" name="return_to" value="/admin">
+      <button class="btn btn--sm" type="submit"><%- icon('send', 'icon--sm') %> Dispatch today</button>
+    </form>
+  </div>
+<% } %>
+
+<div class="stats">
+  <a class="stat" href="/admin/requests?status=submitted"><span class="stat__icon stat__icon--red"><%- icon('inbox') %></span><div><div class="stat__value"><%= stats.queue %></div><div class="stat__label">Need scheduling<%= stats.urgent ? ` (${stats.urgent} urgent)` : '' %></div></div></a>
+  <a class="stat" href="/admin/schedule"><span class="stat__icon"><%- icon('route') %></span><div><div class="stat__value"><%= stats.today %></div><div class="stat__label">Jobs today</div></div></a>
+  <div class="stat"><span class="stat__icon stat__icon--green"><%- icon('checkCircle') %></span><div><div class="stat__value"><%= stats.completedWeek %></div><div class="stat__label">Completed this week</div></div></div>
+  <a class="stat" href="/admin/clients"><span class="stat__icon stat__icon--gold"><%- icon('building') %></span><div><div class="stat__value"><%= stats.doors.toLocaleString() %></div><div class="stat__label">Doors under contract &middot; <%= stats.clients %> clients</div></div></a>
+</div>
+
+<div class="grid-main">
+  <div>
+    <section class="card">
+      <div class="card__head"><h2><%- icon('inbox') %> Request queue</h2><a class="btn btn--ghost btn--sm" href="/admin/requests">All requests <%- icon('chevronRight', 'icon--sm') %></a></div>
+      <% if (!queue.length) { %>
+        <div class="empty"><%- icon('checkCircle') %><h3>Queue is clear</h3><p>Every request has been scheduled.</p></div>
+      <% } else { %>
+        <ul class="list">
+          <% queue.forEach(function (r) { %>
+            <li class="list-item">
+              <div class="list-item__main">
+                <a class="list-item__title" href="/admin/requests/<%= r.id %>">#<%= r.id %> &middot; <%= serviceLabel(r.type) %></a>
+                <div class="list-item__meta">
+                  <span><%- icon('building', 'icon--sm') %> <%= r.property_name %> (<%= r.org_name %>)</span>
+                  <span><%- icon('clock', 'icon--sm') %> <%= fmtDateTime(r.created_at) %></span>
+                  <% if (r.preferred_date) { %><span><%- icon('calendar', 'icon--sm') %> Wants <%= fmtDate(r.preferred_date) %></span><% } %>
+                </div>
+              </div>
+              <div class="btn-row" style="gap:.5rem">
+                <% if (r.priority === 'urgent') { %><span class="chip chip--red"><%- icon('alert', 'icon--sm') %>Urgent</span><% } %>
+                <a class="btn btn--sm" href="/admin/requests/<%= r.id %>#schedule">Schedule</a>
+              </div>
+            </li>
+          <% }) %>
+        </ul>
+      <% } %>
+    </section>
+
+    <section class="card">
+      <div class="card__head"><h2><%- icon('route') %> Today's jobs</h2><a class="btn btn--ghost btn--sm" href="/admin/schedule">Schedule board <%- icon('chevronRight', 'icon--sm') %></a></div>
+      <% if (!todayJobs.length) { %><p class="muted mb-0">No jobs scheduled today.</p><% } %>
+      <div class="grid-2">
+        <% todayJobs.forEach(function (job) { %><div><%- include('../partials/job-card', { job: job, href: '/admin/jobs/' + job.id }) %></div><% }) %>
+      </div>
+    </section>
+  </div>
+
+  <aside>
+    <section class="card">
+      <h2 style="font-size:1.2rem"><%- icon('users') %> Supervisor load</h2>
+      <ul class="list">
+        <% loads.forEach(function (s) { %>
+          <li class="list-item">
+            <span class="user-chip" style="padding:0"><span class="avatar avatar--sm"><%= initials(s.name) %></span><strong><%= s.name %></strong></span>
+            <span class="small"><strong><%= s.today_count %></strong> today &middot; <%= s.week_count %> this week</span>
+          </li>
+        <% }) %>
+      </ul>
+    </section>
+    <section class="card">
+      <div class="card__head"><h2 style="font-size:1.2rem">Tomorrow</h2><a class="btn btn--ghost btn--sm" href="/admin/schedule/day?date=<%= tomorrowJobs.length ? tomorrowJobs[0].scheduled_date : today %>">Run sheet</a></div>
+      <% if (!tomorrowJobs.length) { %><p class="muted mb-0">Nothing scheduled yet.</p><% } %>
+      <ul class="list">
+        <% tomorrowJobs.forEach(function (j) { %>
+          <li class="list-item"><div class="list-item__main"><a class="list-item__title" href="/admin/jobs/<%= j.id %>"><%= j.property_name %></a><div class="list-item__meta"><span><%= fmtTime(j.start_time) %></span><span><%= j.supervisor_name %></span></div></div><%- statusBadge(j.status) %></li>
+        <% }) %>
+      </ul>
+    </section>
+    <% if (stats.newLeads) { %>
+      <a class="card card--accent" style="display:block;text-decoration:none;color:inherit" href="/admin/leads">
+        <h2 style="font-size:1.15rem"><%- icon('mail') %> <%= stats.newLeads %> new quote request<%= stats.newLeads === 1 ? '' : 's' %></h2>
+        <p class="mb-0 muted">Follow up within one business day.</p>
+      </a>
+    <% } %>
+  </aside>
+</div>
+<%- include('../partials/app-end') %>

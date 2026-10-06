@@ -1,0 +1,39 @@
+<%- include('../partials/app-start') %>
+<div class="page-head">
+  <div><h1>Service requests</h1><p>Everything you've asked us to handle, and where it stands.</p></div>
+  <a class="btn btn--gold" href="/portal/requests/new"><%- icon('plus') %> New request</a>
+</div>
+
+<nav class="tabs" aria-label="Filter requests">
+  <a href="/portal/requests?status=open" <%- filter === 'open' ? 'aria-current="page"' : '' %>><%- icon('inbox', 'icon--sm') %> Open</a>
+  <a href="/portal/requests?status=closed" <%- filter === 'closed' ? 'aria-current="page"' : '' %>><%- icon('checkCircle', 'icon--sm') %> Completed &amp; cancelled</a>
+  <a href="/portal/requests?status=all" <%- filter === 'all' ? 'aria-current="page"' : '' %>><%- icon('list', 'icon--sm') %> All</a>
+</nav>
+
+<div class="card card--flush">
+  <% if (!requests.length) { %>
+    <div class="empty"><%- icon('clipboard') %><h3>No requests here</h3><p>When you request service, you can follow its progress on this page.</p><a class="btn" href="/portal/requests/new">Request service</a></div>
+  <% } else { %>
+    <div class="table-wrap">
+      <table class="table table--stack">
+        <thead><tr><th>Request</th><th>Property</th><th>Submitted</th><th>Scheduled</th><th>Status</th></tr></thead>
+        <tbody>
+          <% requests.forEach(function (r) { %>
+            <tr>
+              <td data-label="">
+                <a class="row-link" href="/portal/requests/<%= r.id %>">#<%= r.id %> &middot; <%= serviceLabel(r.type) %></a>
+                <% if (r.priority === 'urgent') { %> <span class="chip chip--red"><%- icon('alert', 'icon--sm') %>Urgent</span><% } %>
+                <% if (r.location_details) { %><div class="muted small"><%= r.location_details %></div><% } %>
+              </td>
+              <td data-label="Property"><%= r.property_name %></td>
+              <td data-label="Submitted" class="nowrap"><%= fmtDate(r.created_at) %></td>
+              <td data-label="Scheduled" class="nowrap"><%= r.scheduled_date ? fmtDate(r.scheduled_date) + (r.scheduled_time ? ', ' + fmtTime(r.scheduled_time) : '') : '—' %></td>
+              <td data-label="Status"><%- statusBadge(r.status) %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</div>
+<%- include('../partials/app-end') %>

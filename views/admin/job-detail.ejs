@@ -1,0 +1,79 @@
+<%- include('../partials/app-start') %>
+<% const closed = ['completed', 'cancelled'].includes(job.status); %>
+<div class="page-head">
+  <div>
+    <div class="breadcrumb"><a href="/admin/schedule?start=<%= job.scheduled_date %>">Schedule</a> <%- icon('chevronRight', 'icon--sm') %> Job #<%= job.id %></div>
+    <h1><%= job.title %></h1>
+    <p><%= fmtLongDate(job.scheduled_date) %><%= job.start_time ? ' · ' + fmtTime(job.start_time) : '' %><%= job.end_time ? ' – ' + fmtTime(job.end_time) : '' %> &middot; <%= job.org_name %></p>
+  </div>
+  <div class="btn-row">
+    <%- statusBadge(job.status) %>
+    <% if (!closed) { %>
+      <form method="post" action="/admin/jobs/<%= job.id %>/dispatch">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button class="btn btn--gold" type="submit"><%- icon('send') %> <%= job.dispatched_at ? 'Re-send to crew' : 'Forward to crew' %></button>
+      </form>
+    <% } %>
+  </div>
+</div>
+
+<% if (job.dispatched_at) { %>
+  <div class="alert alert--info"><%- icon('send') %><div>Forwarded to <%= job.supervisor_name || 'supervisor' %><%= job.technician_names ? ' and ' + job.technician_names : '' %> on <%= fmtDateTime(job.dispatched_at) %>.</div></div>
+<% } else if (!closed) { %>
+  <div class="alert alert--warn"><%- icon('alert') %><div>Not yet sent to the crew. They won't see this job until it is forwarded.</div></div>
+<% } %>
+
+<div class="grid-main">
+  <div>
+    <% if (!closed) { %>
+    <form class="card" method="post" action="/admin/jobs/<%= job.id %>">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <h2 style="font-size:1.25rem">Edit assignment</h2>
+      <div class="form-grid mb-2">
+        <div class="field span-2"><label for="title">Title</label><input id="title" name="title" type="text" required value="<%= job.title %>"></div>
+        <div class="field"><label for="scheduled_date">Date</label><input id="scheduled_date" name="scheduled_date" type="date" required value="<%= job.scheduled_date %>"></div>
+        <div class="field"><label for="start_time">Start</label><input id="start_time" name="start_time" type="time" value="<%= job.start_time || '' %>"></div>
+        <div class="field"><label for="end_time">End</label><input id="end_time" name="end_time" type="time" value="<%= job.end_time || '' %>"></div>
+      </div>
+      <%- include('../partials/crew-fields', { selected: { supervisor_id: job.supervisor_id, technician_ids: job.technicians.map(function (t) { return t.id; }) } }) %>
+      <div class="field mt-2"><label for="instructions">Crew instructions</label><textarea id="instructions" name="instructions"><%= job.instructions || '' %></textarea></div>
+      <button class="btn mt-2" type="submit">Save changes<%= job.dispatched_at ? ' & notify crew' : '' %></button>
+    </form>
+    <% } else { %>
+      <section class="card">
+        <h2 style="font-size:1.25rem">Assignment</h2>
+        <dl class="dl">
+          <dt>Supervisor</dt><dd><%= job.supervisor_name || '—' %></dd>
+          <dt>Technicians</dt><dd><%= job.technician_names || '—' %></dd>
+          <dt>Instructions</dt><dd><%= job.instructions || '—' %></dd>
+          <% if (job.completed_at) { %><dt>Completed</dt><dd><%= fmtDateTime(job.completed_at) %></dd><% } %>
+          <% if (job.completion_notes) { %><dt>Crew notes</dt><dd><%= job.completion_notes %></dd><% } %>
+        </dl>
+      </section>
+    <% } %>
+  </div>
+  <aside>
+    <section class="card">
+      <h2 style="font-size:1.2rem">Property</h2>
+      <p><strong><%= job.property_name %></strong><br><%= job.address %>, <%= job.city %> <%= job.state %> <%= job.zip %></p>
+      <p class="small"><strong>Onsite:</strong> <%= job.onsite_contact || '—' %></p>
+      <p class="small mb-0"><strong>Access:</strong> <%= job.access_notes || '—' %></p>
+      <% if (job.request_id) { %><a class="btn btn--outline btn--sm mt-2" href="/admin/requests/<%= job.request_id %>">View request #<%= job.request_id %></a><% } %>
+    </section>
+    <% if (!closed) { %>
+      <section class="card">
+        <h2 style="font-size:1.2rem">Update status</h2>
+        <form method="post" action="/admin/jobs/<%= job.id %>/status" class="mb-2">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="status" value="completed">
+          <div class="field mb-2"><label for="notes">Completion notes</label><input id="notes" name="notes" type="text"></div>
+          <button class="btn btn--success btn--block" type="submit"><%- icon('checkCircle') %> Mark completed</button>
+        </form>
+        <form method="post" action="/admin/jobs/<%= job.id %>/status" data-confirm="Cancel this job? The crew will be notified.">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="status" value="cancelled">
+          <button class="btn btn--danger btn--block" type="submit"><%- icon('x') %> Cancel job</button>
+        </form>
+      </section>
+    <% } %>
+  </aside>
+</div>
+<%- include('../partials/app-end') %>

@@ -1,0 +1,245 @@
+<%- include('../partials/public-header') %>
+
+<section class="hero" aria-labelledby="hero-title">
+  <div class="container">
+    <div>
+      <span class="eyebrow eyebrow--gold"><%- icon('flag', 'icon--sm') %> Veteran-owned. Mission-driven.</span>
+      <h1 id="hero-title">Doorstep valet trash &amp; spotless common areas, <em>handled with military precision.</em></h1>
+      <p class="lead">We pick up trash and recycling at every door, every service night, and keep your lobbies, hallways, and amenity spaces tour-ready. You manage it all from one simple portal.</p>
+      <div class="btn-row mt-3">
+        <a class="btn btn--gold btn--lg" href="/contact">Get a free property quote <%- icon('chevronRight') %></a>
+        <a class="btn btn--light btn--lg" href="/login"><%- icon('user') %> Client login</a>
+      </div>
+      <ul class="hero__trust">
+        <li><%- icon('shield') %> Disabled Veteran Owned</li>
+        <li><%- icon('camera') %> Photo-documented service</li>
+        <li><%- icon('users') %> Background-checked crews</li>
+      </ul>
+    </div>
+    <div class="hero__art" aria-hidden="true">
+      <div class="preview">
+        <div class="preview__bar"><span><%- icon('route', 'icon--sm') %> Tonight's route</span><span class="badge badge--amber"><%- icon('send', 'icon--sm') %>Crew Dispatched</span></div>
+        <div class="preview__body">
+          <div>
+            <div class="muted small">The Oakridge at Riverside &middot; 240 doors</div>
+            <div class="preview__big">8:00 PM – 10:00 PM</div>
+          </div>
+          <div>
+            <div class="preview__row small"><strong>Buildings complete</strong><span>9 of 12</span></div>
+            <div class="progress"><span style="width: 75%"></span></div>
+          </div>
+          <div class="preview__row">
+            <span class="user-chip" style="padding:0"><span class="avatar avatar--sm">MR</span><span><strong>Marcus R.</strong><br><span class="muted small">Supervisor + 2 technicians</span></span></span>
+            <span class="chip chip--green"><%- icon('check', 'icon--sm') %>On time</span>
+          </div>
+          <div class="preview__row small">
+            <span><%- icon('truck', 'icon--sm') %> Bulk pickup, Bldg 4</span><span class="badge badge--success"><%- icon('check', 'icon--sm') %>Completed</span>
+          </div>
+        </div>
+      </div>
+      <div class="preview__float"><%- icon('heart') %> Every service night helps house a homeless veteran.</div>
+    </div>
+  </div>
+</section>
+
+<div class="dvosb-ribbon">
+  <div class="container">
+    <span><%- icon('star') %> Disabled Veteran Owned Small Business</span>
+    <span><%- icon('heart') %> A portion of profits supports homeless veteran housing programs</span>
+    <span><%- icon('shield') %> Licensed &amp; insured</span>
+  </div>
+</div>
+
+<section class="section section--white" aria-labelledby="services-title">
+  <div class="container">
+    <div class="section__head">
+      <span class="eyebrow">What we do</span>
+      <h2 id="services-title">One vendor for waste and common area care</h2>
+      <p class="lead">Residents expect clean, convenient communities. We take the most-used amenity, and the most-noticed mess, off your team's plate.</p>
+    </div>
+    <div class="grid-3">
+      <% [
+        ['valet_trash', 'valet-trash', 'Doorstep Valet Trash', 'Nightly doorstep pickup of trash and recycling, 5 to 7 nights a week.', ['Branded bins for every unit', 'Service window reminders for residents', 'Missed-pickup comebacks']],
+        ['common_area', 'common-area', 'Common Area Cleanup', 'Porter service for the spaces prospects see on every tour.', ['Lobbies, halls & stairwells', 'Mailrooms, laundry & fitness', 'Pool decks & clubhouses']],
+        ['bulk_removal', 'bulk', 'Bulk Removal & Trash-Outs', 'Furniture, abandoned items, and move-out clean-outs on demand.', ['Same/next-day urgent options', 'Unit trash-outs for faster turns', 'Photo before & after']],
+        ['pet_station', 'pet', 'Pet Waste Stations', 'Emptied, sanitized, and restocked on a set schedule.', ['Bag restocking', 'Broken dispenser reports', 'Fewer resident complaints']],
+        ['enclosure', 'enclosure', 'Dumpster & Compactor Areas', 'Overflow, spills, and debris cleared so haulers can do their job.', ['Overflow & debris pickup', 'Deodorizing & washdown', 'Compactor level reporting']],
+        ['missed_pickup', 'portal', 'Client Portal', 'Request service, track crews, and manage billing from any device.', ['Request service in under a minute', 'Live status updates', 'Invoices & team access']],
+      ].forEach(function (s) { %>
+        <article class="service-card">
+          <div class="service-card__icon"><%- icon(SERVICE_TYPES[s[0]].icon, 'icon--lg') %></div>
+          <h3><%= s[2] %></h3>
+          <p><%= s[3] %></p>
+          <ul><% s[4].forEach(function (b) { %><li><%- icon('check', 'icon--sm') %><span><%= b %></span></li><% }) %></ul>
+          <a class="more" href="/services#<%= s[1] %>">Learn more <%- icon('chevronRight', 'icon--sm') %></a>
+        </article>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<section class="section section--navy" aria-labelledby="how-title">
+  <div class="container">
+    <div class="section__head">
+      <span class="eyebrow eyebrow--gold">How it works</span>
+      <h2 id="how-title">Up and running in four steps</h2>
+      <p class="lead">A clear plan, a clear chain of command, and no surprises for your onsite team.</p>
+    </div>
+    <ol class="steps">
+      <li><h3>Free walk-through</h3><p>We tour your community, count doors and buildings, and map the route.</p></li>
+      <li><h3>Resident launch kit</h3><p>Bins, door hangers, and a one-page guide so residents know the rules and service window.</p></li>
+      <li><h3>Nightly service</h3><p>A supervisor leads every crew. Each visit is logged with notes and photos.</p></li>
+      <li><h3>Manage in the portal</h3><p>Request extra services, report a missed door, and see your schedule any time.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="portal-title">
+  <div class="container">
+    <div class="feature-row">
+      <div>
+        <span class="eyebrow">Built for property managers</span>
+        <h2 id="portal-title">Everything in one portal, nothing lost in email</h2>
+        <p class="lead">Your account, your properties, and every request we have ever handled for you, in plain language and large, easy-to-read type.</p>
+        <ul class="check-list">
+          <li><%- icon('checkCircle') %><span><strong>Request service in under a minute:</strong> pick a service, choose a property, add details.</span></li>
+          <li><%- icon('checkCircle') %><span><strong>Know exactly where things stand:</strong> Submitted, Scheduled, Crew Dispatched, In Progress, Completed.</span></li>
+          <li><%- icon('checkCircle') %><span><strong>See your schedule</strong> for every property, including nightly valet routes.</span></li>
+          <li><%- icon('checkCircle') %><span><strong>Invite your team</strong> and keep billing, invoices, and gate codes up to date.</span></li>
+        </ul>
+        <div class="btn-row"><a class="btn" href="/register">Create a client account</a><a class="btn btn--outline" href="/how-it-works">See the workflow</a></div>
+      </div>
+      <div class="illustration-card" aria-hidden="true">
+        <div class="card mb-0">
+          <div class="card__head"><h3>Request service</h3><span class="badge badge--info"><%- icon('inbox', 'icon--sm') %>Step 1 of 3</span></div>
+          <div class="type-picker" style="grid-template-columns:repeat(2, minmax(0, 1fr))">
+            <% ['missed_pickup', 'bulk_removal', 'common_area', 'pet_station'].forEach(function (t, i) { %>
+              <div class="type-option"><input type="radio" tabindex="-1" <%= i === 1 ? 'checked' : '' %> disabled><span class="type-option__body"><span class="type-option__icon"><%- icon(SERVICE_TYPES[t].icon) %></span><span><span class="type-option__title"><%= SERVICE_TYPES[t].short %></span></span></span></div>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="mission-band" aria-labelledby="mission-title">
+  <div class="container">
+    <svg class="mission-band__seal" viewBox="0 0 120 120" aria-hidden="true">
+      <circle cx="60" cy="60" r="56" fill="#13294b"/>
+      <circle cx="60" cy="60" r="48" fill="none" stroke="#f2b33d" stroke-width="2" stroke-dasharray="4 4"/>
+      <path d="M60 36 80 52v28H40V52z" fill="#f2b33d"/>
+      <rect x="54" y="62" width="12" height="18" fill="#13294b"/>
+      <path d="M60 30 86 51" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+      <path d="M60 30 34 51" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+    </svg>
+    <div>
+      <span class="eyebrow">Service beyond the uniform</span>
+      <h2 id="mission-title" class="mb-0">Your trash service helps house homeless veterans</h2>
+      <p class="lead mt-2 mb-0">Valor Valet is a Disabled Veteran Owned Small Business. A portion of our profits goes directly to programs that move homeless veterans into stable housing. Clean communities for your residents, and a home for those who served.</p>
+    </div>
+    <a class="btn btn--lg" href="/mission">Our mission <%- icon('chevronRight') %></a>
+  </div>
+</section>
+
+<section class="section section--white" aria-labelledby="quotes-title">
+  <div class="container">
+    <div class="section__head center center">
+      <span class="eyebrow">What managers say</span>
+      <h2 id="quotes-title">Reliability your residents notice</h2>
+    </div>
+    <div class="grid-3">
+      <% [
+        ['Missed doors used to be a weekly phone call. Now residents barely notice the service, which is exactly the point.', 'Regional Property Manager', 'Garden-style community, 240 units'],
+        ['The portal is the easiest vendor system I use. Big buttons, clear statuses, and I can see who is on site tonight.', 'Community Manager', 'Mid-rise community, 312 units'],
+        ['Their crews are disciplined and respectful. Knowing part of our spend helps veterans find housing makes it an easy renewal.', 'Owner Representative', 'Portfolio of 4 properties'],
+      ].forEach(function (q) { %>
+        <figure class="quote">
+          <div class="stars" aria-label="5 out of 5 stars"><% for (let i = 0; i < 5; i++) { %><%- icon('star', 'icon--sm') %><% } %></div>
+          <blockquote>&ldquo;<%= q[0] %>&rdquo;</blockquote>
+          <figcaption><%= q[1] %><span><%= q[2] %></span></figcaption>
+        </figure>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="pricing-title">
+  <div class="container">
+    <div class="section__head center center">
+      <span class="eyebrow">Straightforward pricing</span>
+      <h2 id="pricing-title">Priced per door, quoted for your property</h2>
+      <p class="lead" style="margin-inline:auto">Rates depend on unit count, building layout, and service nights. Larger communities usually get a lower per-door rate.</p>
+    </div>
+    <div class="grid-3">
+      <div class="price-card">
+        <h3>Essential</h3>
+        <p class="muted">For smaller or budget-focused communities.</p>
+        <div class="price">3 nights <small>/ week</small></div>
+        <ul>
+          <li><%- icon('check', 'icon--sm') %>Doorstep trash collection</li>
+          <li><%- icon('check', 'icon--sm') %>Client portal access</li>
+          <li><%- icon('check', 'icon--sm') %>Missed-pickup comebacks</li>
+        </ul>
+        <a class="btn btn--outline btn--block" href="/contact">Request a quote</a>
+      </div>
+      <div class="price-card price-card--featured">
+        <h3>Standard</h3>
+        <p class="muted">The industry standard: Sunday through Thursday.</p>
+        <div class="price">5 nights <small>/ week</small></div>
+        <ul>
+          <li><%- icon('check', 'icon--sm') %>Trash &amp; recycling at every door</li>
+          <li><%- icon('check', 'icon--sm') %>Enclosure &amp; overflow cleanup</li>
+          <li><%- icon('check', 'icon--sm') %>Resident launch kit &amp; bins</li>
+          <li><%- icon('check', 'icon--sm') %>Photo-documented service log</li>
+        </ul>
+        <a class="btn btn--gold btn--block" href="/contact">Request a quote</a>
+      </div>
+      <div class="price-card">
+        <h3>Full Service</h3>
+        <p class="muted">Luxury and high-rise communities.</p>
+        <div class="price">7 nights <small>+ porter</small></div>
+        <ul>
+          <li><%- icon('check', 'icon--sm') %>Everything in Standard</li>
+          <li><%- icon('check', 'icon--sm') %>Common area porter service</li>
+          <li><%- icon('check', 'icon--sm') %>Pet station maintenance</li>
+          <li><%- icon('check', 'icon--sm') %>Priority bulk removal</li>
+        </ul>
+        <a class="btn btn--outline btn--block" href="/contact">Request a quote</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--white" aria-labelledby="faq-title">
+  <div class="container" style="max-width:860px">
+    <div class="section__head">
+      <span class="eyebrow">Questions</span>
+      <h2 id="faq-title">Frequently asked questions</h2>
+    </div>
+    <div class="faq">
+      <details><summary>What happens if a resident's trash is missed?</summary><p>Report it from your portal using "Report Missed Pickup." We dispatch a comeback, usually the same night, and you will see the status change as our crew completes it.</p></details>
+      <details><summary>How do residents know when to set out their trash?</summary><p>Every community gets a resident launch kit with the service nights and set-out window (for example 6 PM to 8 PM). We also provide door hangers for courtesy reminders.</p></details>
+      <details><summary>Are your crews background-checked and insured?</summary><p>Yes. Every supervisor and technician is background-checked, uniformed, and covered by our general liability and workers' compensation insurance.</p></details>
+      <details><summary>How does the veteran housing pledge work?</summary><p>As a Disabled Veteran Owned Small Business, we commit a portion of our profits to organizations that provide housing for homeless veterans. Learn more on our <a href="/mission">mission page</a>.</p></details>
+      <details><summary>Can you service more than one of our properties?</summary><p>Absolutely. Your portal shows all of your properties in one place, with separate schedules, access notes, and service plans for each.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="cta-band">
+      <div>
+        <h2>Ready for cleaner, quieter nights?</h2>
+        <p>Get a free walk-through and per-door quote, usually within one business day.</p>
+      </div>
+      <div class="btn-row">
+        <a class="btn btn--gold btn--lg" href="/contact">Get my free quote</a>
+        <a class="btn btn--light btn--lg" href="tel:+18005550142"><%- icon('phone') %> <%= COMPANY.phone %></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%- include('../partials/public-footer') %>

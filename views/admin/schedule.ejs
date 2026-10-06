@@ -1,0 +1,55 @@
+<%- include('../partials/app-start') %>
+<div class="page-head">
+  <div><h1>Schedule board</h1><p>Week of <%= fmtLongDate(start) %>. Dispatch a day to forward every assignment to its supervisor and technicians.</p></div>
+  <a class="btn btn--gold" href="/admin/jobs/new"><%- icon('plus') %> Create job</a>
+</div>
+
+<form class="filters no-print" method="get" action="/admin/schedule">
+  <div class="btn-row">
+    <a class="btn btn--outline" href="/admin/schedule?start=<%= prev %><%= supervisorId ? '&supervisor=' + supervisorId : '' %>"><%- icon('chevronLeft') %> Previous week</a>
+    <a class="btn btn--outline" href="/admin/schedule<%= supervisorId ? '?supervisor=' + supervisorId : '' %>">This week</a>
+    <a class="btn btn--outline" href="/admin/schedule?start=<%= next %><%= supervisorId ? '&supervisor=' + supervisorId : '' %>">Next week <%- icon('chevronRight') %></a>
+  </div>
+  <input type="hidden" name="start" value="<%= start %>">
+  <div class="field">
+    <label for="supervisor">Supervisor</label>
+    <select id="supervisor" name="supervisor" onchange="this.form.submit()">
+      <option value="">All supervisors</option>
+      <% supervisors.forEach(function (s) { %><option value="<%= s.id %>" <%= supervisorId === s.id ? 'selected' : '' %>><%= s.name %></option><% }) %>
+    </select>
+  </div>
+</form>
+
+<div class="legend" aria-label="Service type legend">
+  <% Object.keys(SERVICE_TYPES).forEach(function (t) { %><%- typeChip(t) %><% }) %>
+</div>
+
+<div class="week">
+  <% days.forEach(function (d) { %>
+    <section class="week__day<%= d.date === today ? ' week__day--today' : '' %>" aria-label="<%= fmtLongDate(d.date) %>">
+      <div class="week__head">
+        <span class="week__dow"><%= fmtDate(d.date, { weekday: 'long' }) %></span>
+        <span class="week__date"><%= fmtDate(d.date, { month: 'short', day: 'numeric' }) %></span>
+      </div>
+      <div class="week__jobs">
+        <% if (!d.jobs.length) { %><p class="muted small">No jobs</p><% } %>
+        <% d.jobs.forEach(function (job) { %><%- include('../partials/job-card', { job: job, href: '/admin/jobs/' + job.id }) %><% }) %>
+      </div>
+      <div class="week__foot no-print">
+        <% if (d.pending) { %>
+          <form method="post" action="/admin/schedule/dispatch">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <input type="hidden" name="date" value="<%= d.date %>">
+            <input type="hidden" name="return_to" value="/admin/schedule?start=<%= start %>">
+            <button class="btn btn--gold btn--sm" type="submit"><%- icon('send', 'icon--sm') %> Dispatch <%= d.pending %></button>
+          </form>
+        <% } else if (d.jobs.length) { %>
+          <span class="badge badge--success" style="justify-content:center"><%- icon('check', 'icon--sm') %>All dispatched</span>
+        <% } %>
+        <a class="btn btn--ghost btn--sm" href="/admin/schedule/day?date=<%= d.date %>"><%- icon('printer', 'icon--sm') %> Run sheet</a>
+        <a class="btn btn--ghost btn--sm" href="/admin/jobs/new?date=<%= d.date %>"><%- icon('plus', 'icon--sm') %> Add job</a>
+      </div>
+    </section>
+  <% }) %>
+</div>
+<%- include('../partials/app-end') %>

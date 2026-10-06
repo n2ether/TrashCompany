@@ -1,0 +1,28 @@
+<%- include('../partials/app-start') %>
+<div class="page-head">
+  <div><h1>Properties</h1><p>Keep access notes and service nights current so crews arrive prepared.</p></div>
+  <a class="btn btn--gold" href="/portal/properties/new"><%- icon('plus') %> Add property</a>
+</div>
+<div class="grid-2">
+  <% properties.forEach(function (p) { %>
+    <article class="card" id="property-<%= p.id %>">
+      <div class="card__head">
+        <div><h2 style="font-size:1.3rem;margin:0"><%= p.name %></h2><span class="muted"><%= p.address %>, <%= p.city %> <%= p.state %> <%= p.zip %></span></div>
+        <a class="btn btn--outline btn--sm" href="/portal/properties/<%= p.id %>/edit">Edit</a>
+      </div>
+      <dl class="dl">
+        <dt>Size</dt><dd><%= p.units %> units &middot; <%= p.buildings %> building<%= p.buildings === 1 ? '' : 's' %> &middot; <%= p.property_type %></dd>
+        <dt>Valet nights</dt><dd><%= p.service_nights ? p.service_nights.split(',').join(', ') : 'None (on-demand only)' %><%= p.service_window ? ' · ' + p.service_window : '' %></dd>
+        <dt>Services</dt><dd><div class="btn-row" style="gap:.35rem"><% (p.services || '').split(',').filter(Boolean).forEach(function (s) { %><%- typeChip(s) %><% }) %></div></dd>
+        <dt>Onsite contact</dt><dd><%= p.onsite_contact || '—' %></dd>
+        <dt>Access notes</dt><dd><%= p.access_notes || '—' %></dd>
+      </dl>
+      <div class="btn-row mt-3">
+        <a class="btn btn--sm" href="/portal/requests/new?property=<%= p.id %>"><%- icon('plus', 'icon--sm') %> Request service</a>
+        <a class="btn btn--ghost btn--sm" href="/portal/schedule?property=<%= p.id %>"><%- icon('calendar', 'icon--sm') %> Schedule</a>
+        <% if (p.open_requests) { %><span class="badge badge--amber"><%- icon('clipboard', 'icon--sm') %><%= p.open_requests %> open</span><% } %>
+      </div>
+    </article>
+  <% }) %>
+</div>
+<%- include('../partials/app-end') %>

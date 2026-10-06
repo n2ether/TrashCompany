@@ -1,0 +1,47 @@
+<%- include('../partials/public-header') %>
+
+<section class="page-hero">
+  <div class="container">
+    <span class="eyebrow eyebrow--gold">Services</span>
+    <h1>Waste and common area care for multifamily communities</h1>
+    <p class="lead">Pick a single service or bundle them under one vendor, one portal, and one invoice.</p>
+  </div>
+</section>
+
+<section class="section section--white">
+  <div class="container">
+    <% [
+      { id: 'valet-trash', type: 'valet_trash', title: 'Doorstep Valet Trash & Recycling', text: 'Residents set their bagged trash in a branded bin outside their door during the set-out window. Our crew walks every building, collects every door, and hauls it to your compactor or dumpster.', points: ['3, 5, 6, or 7 service nights per week', 'Recycling collection on designated nights', 'Courtesy notices for rule violations (unbagged trash, late set-out)', 'Compactor and dumpster level reporting', 'Missed-pickup comebacks, usually the same night'] },
+      { id: 'common-area', type: 'common_area', title: 'Common Area Cleanup & Porter Service', text: 'Common areas are the first thing prospects see on a tour. Our porters keep them clean on a schedule you choose, from daily to monthly deep cleans.', points: ['Lobbies, corridors, elevators & stairwells', 'Mailrooms, laundry rooms & fitness centers', 'Clubhouses, pool decks & grills', 'Trash can liners and litter pickup across the grounds', 'Every visit logged in your portal'] },
+      { id: 'bulk', type: 'bulk_removal', title: 'Bulk Removal & Unit Trash-Outs', text: 'Abandoned furniture and move-out debris slow down unit turns and hurt curb appeal. Request a pickup from your portal and we handle it, with urgent options available.', points: ['Furniture, mattresses & appliances', 'Move-out and eviction trash-outs', 'Same or next-day urgent service', 'Before and after notes for your records'] },
+      { id: 'pet', type: 'pet_station', title: 'Pet Waste Station Service', text: 'Full stations and empty bag dispensers are one of the most common resident complaints. We keep them clean and stocked.', points: ['Empty, sanitize & restock bags', 'Damaged equipment reported with photos', 'Grounds sweep for pet waste'] },
+      { id: 'enclosure', type: 'enclosure', title: 'Dumpster & Compactor Areas', text: 'Overflow and spills around enclosures attract pests and block haulers. We keep these areas clear and odor-free.', points: ['Overflow and loose debris removal', 'Washdown and enzyme deodorizing', 'Cardboard breakdown'] },
+    ].forEach(function (s, i) { %>
+      <div class="feature-row" id="<%= s.id %>">
+        <div style="<%= i % 2 ? 'order:2' : '' %>">
+          <span class="eyebrow"><%- icon(SERVICE_TYPES[s.type].icon, 'icon--sm') %> <%= SERVICE_TYPES[s.type].short %></span>
+          <h2><%= s.title %></h2>
+          <p class="lead"><%= s.text %></p>
+          <ul class="check-list"><% s.points.forEach(function (p) { %><li><%- icon('checkCircle') %><span><%= p %></span></li><% }) %></ul>
+          <a class="btn" href="/contact">Get a quote</a>
+        </div>
+        <div class="illustration-card center" aria-hidden="true">
+          <div class="service-card__icon" style="width:120px;height:120px;margin:1rem auto;border-radius:28px"><%- icon(SERVICE_TYPES[s.type].icon, 'icon--xl') %></div>
+          <p class="mb-0" style="font-family:var(--font-head);font-weight:700;font-size:1.3rem;color:var(--navy-900)"><%= SERVICE_TYPES[s.type].label %></p>
+          <p class="muted"><%= SERVICE_TYPES[s.type].blurb %></p>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="cta-band">
+      <div><h2>Not sure which services you need?</h2><p>We will walk your property and recommend a plan, at no cost.</p></div>
+      <a class="btn btn--gold btn--lg" href="/contact">Schedule a walk-through</a>
+    </div>
+  </div>
+</section>
+
+<%- include('../partials/public-footer') %>

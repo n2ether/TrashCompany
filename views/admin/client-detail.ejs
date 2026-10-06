@@ -1,0 +1,84 @@
+<%- include('../partials/app-start') %>
+<div class="page-head">
+  <div>
+    <div class="breadcrumb"><a href="/admin/clients">Clients</a> <%- icon('chevronRight', 'icon--sm') %> <%= org.name %></div>
+    <h1><%= org.name %></h1>
+    <p><%= org.address || '' %> &middot; <%= org.phone || '' %> &middot; <%= org.billing_email || '' %></p>
+  </div>
+</div>
+
+<div class="grid-main">
+  <div>
+    <section class="card">
+      <h2 style="font-size:1.25rem">Properties</h2>
+      <ul class="list">
+        <% properties.forEach(function (p) { %>
+          <li class="list-item">
+            <div class="list-item__main">
+              <span class="list-item__title"><%= p.name %></span>
+              <div class="list-item__meta"><span><%= p.address %>, <%= p.city %></span><span><%= p.units %> units</span><span><%= p.service_nights || 'On-demand' %></span></div>
+              <div class="small mt-0"><strong>Access:</strong> <%= p.access_notes || '—' %></div>
+            </div>
+            <a class="btn btn--sm btn--outline" href="/admin/jobs/new?property=<%= p.id %>">Add job</a>
+          </li>
+        <% }) %>
+      </ul>
+    </section>
+    <section class="card card--flush">
+      <div class="card__head"><h2>Recent requests</h2></div>
+      <div class="table-wrap">
+        <table class="table table--stack">
+          <thead><tr><th>Request</th><th>Property</th><th>Submitted</th><th>Status</th></tr></thead>
+          <tbody>
+            <% requests.forEach(function (r) { %>
+              <tr><td data-label=""><a class="row-link" href="/admin/requests/<%= r.id %>">#<%= r.id %> &middot; <%= serviceLabel(r.type) %></a></td><td data-label="Property"><%= r.property_name %></td><td data-label="Submitted"><%= fmtDate(r.created_at) %></td><td data-label="Status"><%- statusBadge(r.status) %></td></tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <section class="card card--flush" id="billing">
+      <div class="card__head"><h2>Invoices</h2></div>
+      <div class="table-wrap">
+        <table class="table table--stack">
+          <thead><tr><th>Invoice</th><th>Month</th><th>Amount</th><th>Status</th><th><span class="sr-only">Actions</span></th></tr></thead>
+          <tbody>
+            <% invoices.forEach(function (i) { %>
+              <tr>
+                <td data-label="Invoice"><strong><%= i.number %></strong></td><td data-label="Month"><%= i.period %></td><td data-label="Amount"><%= fmtMoney(i.amount_cents) %></td>
+                <td data-label="Status"><span class="badge badge--<%= i.status === 'paid' ? 'success' : 'amber' %>"><%= i.status === 'paid' ? 'Paid' : 'Open' %></span></td>
+                <td data-label=""><% if (i.status !== 'paid') { %><form method="post" action="/admin/invoices/<%= i.id %>/paid"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--sm btn--outline" type="submit">Mark paid</button></form><% } %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+      <form method="post" action="/admin/clients/<%= org.id %>/invoices" class="filters" style="padding:1rem 1.5rem 1.5rem;margin:0">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="field"><label for="period">Billing month</label><input id="period" name="period" type="month" required value="<%= isoDate().slice(0, 7) %>"></div>
+        <div class="field"><label for="amount">Amount (USD)</label><input id="amount" name="amount" type="number" step="0.01" min="0" required></div>
+        <button class="btn" type="submit"><%- icon('receipt') %> Create invoice</button>
+      </form>
+    </section>
+  </div>
+  <aside>
+    <form class="card" method="post" action="/admin/clients/<%= org.id %>">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <h2 style="font-size:1.2rem">Account</h2>
+      <div class="field mb-2"><label for="plan">Service plan</label><input id="plan" name="plan" type="text" value="<%= org.plan %>"></div>
+      <div class="field mb-2"><label for="status">Status</label>
+        <select id="status" name="status"><% ['active', 'paused', 'prospect'].forEach(function (s) { %><option value="<%= s %>" <%= org.status === s ? 'selected' : '' %>><%= s.charAt(0).toUpperCase() + s.slice(1) %></option><% }) %></select>
+      </div>
+      <button class="btn btn--block" type="submit">Save</button>
+    </form>
+    <section class="card">
+      <h2 style="font-size:1.2rem">Contacts</h2>
+      <ul class="list">
+        <% contacts.forEach(function (c) { %>
+          <li><strong><%= c.name %></strong><div class="muted small"><%= c.title || '' %></div><div class="small"><a href="mailto:<%= c.email %>"><%= c.email %></a><%= c.phone ? ' · ' + c.phone : '' %></div></li>
+        <% }) %>
+      </ul>
+    </section>
+  </aside>
+</div>
+<%- include('../partials/app-end') %>
