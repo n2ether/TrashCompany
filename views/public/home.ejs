@@ -112,7 +112,7 @@
       <div class="illustration-card" aria-hidden="true">
         <div class="card mb-0">
           <div class="card__head"><h3>Request service</h3><span class="badge badge--info"><%- icon('inbox', 'icon--sm') %>Step 1 of 3</span></div>
-          <div class="type-picker" style="grid-template-columns:1fr 1fr">
+          <div class="type-picker" style="grid-template-columns:repeat(2, minmax(0, 1fr))">
             <% ['missed_pickup', 'bulk_removal', 'common_area', 'pet_station'].forEach(function (t, i) { %>
               <div class="type-option"><input type="radio" tabindex="-1" <%= i === 1 ? 'checked' : '' %> disabled><span class="type-option__body"><span class="type-option__icon"><%- icon(SERVICE_TYPES[t].icon) %></span><span><span class="type-option__title"><%= SERVICE_TYPES[t].short %></span></span></span></div>
             <% }) %>

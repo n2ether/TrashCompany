@@ -18,7 +18,7 @@
   <div class="card mb-3">
     <ol class="stepper" aria-label="Request progress">
       <% order.forEach(function (s, i) { %>
-        <li class="<%= i < idx || r.status === 'completed' ? 'done' : i === idx ? 'current' : '' %>" <%- i === idx ? 'aria-current="step"' : '' %>><%= STATUSES[s].label %></li>
+        <li class="<%= i < idx || r.status === 'completed' ? 'done' : i === idx ? 'current' : '' %>" <%- i === idx ? 'aria-current="step"' : '' %>><span><%= STATUSES[s].label %></span></li>
       <% }) %>
     </ol>
     <% if (jobs.length) { const j = jobs[0]; %>

@@ -6,7 +6,7 @@
 
 <form class="filters no-print" method="get" action="/admin/schedule">
   <div class="btn-row">
-    <a class="btn btn--outline" href="/admin/schedule?start=<%= prev %><%= supervisorId ? '&supervisor=' + supervisorId : '' %>"><%- icon('chevronLeft') %> <span class="sr-only">Previous</span> week</a>
+    <a class="btn btn--outline" href="/admin/schedule?start=<%= prev %><%= supervisorId ? '&supervisor=' + supervisorId : '' %>"><%- icon('chevronLeft') %> Previous week</a>
     <a class="btn btn--outline" href="/admin/schedule<%= supervisorId ? '?supervisor=' + supervisorId : '' %>">This week</a>
     <a class="btn btn--outline" href="/admin/schedule?start=<%= next %><%= supervisorId ? '&supervisor=' + supervisorId : '' %>">Next week <%- icon('chevronRight') %></a>
   </div>

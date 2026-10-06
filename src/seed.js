@@ -1,6 +1,6 @@
 const { db, run, get, transaction } = require('./db');
 const { hashPassword } = require('./auth');
-const { isoDate, addDays, parseDate } = require('./helpers');
+const { isoDate, addDays, parseDate, fmtLongDate } = require('./helpers');
 const { NIGHTS } = require('./constants');
 
 const DEMO_PASSWORDS = { admin: 'Admin2026!', client: 'Client2026!', crew: 'Crew2026!' };
@@ -160,7 +160,7 @@ function seed() {
       location: 'All 8 pet stations along the dog walk and Building 1–12 corners', status: 'dispatched',
       description: 'Empty, sanitize and restock bags at every station.',
     });
-    activity(pet, admin, `Scheduled for ${addDays(today, 1)} at 9:00 AM.`, `${addDays(today, -2)} 10:00:00`);
+    activity(pet, admin, `Scheduled for ${fmtLongDate(addDays(today, 1))} at 9:00 AM.`, `${addDays(today, -2)} 10:00:00`);
     activity(pet, admin, 'Crew dispatched. Supervisor: Marcus Ramirez.', `${addDays(today, -2)} 10:05:00`);
     job({ request_id: pet, property_id: riverside, type: 'pet_station', title: 'Pet waste station service — Riverside', date: addDays(today, 1), start: '09:00', end: '11:00', supervisor: marcus, techs: [ana], status: 'dispatched', instructions: 'Restock 2 rolls per station. Report any broken dispensers with a photo.' });
 
@@ -169,7 +169,7 @@ function seed() {
       location: 'North garage compactor room', status: 'in_progress',
       description: 'Spilled liquid and loose debris around the compactor. Strong odor reported by residents.',
     });
-    activity(enclosure, admin, `Scheduled for ${today} at 1:00 PM.`, `${addDays(today, -1)} 09:00:00`);
+    activity(enclosure, admin, `Scheduled for ${fmtLongDate(today)} at 1:00 PM.`, `${addDays(today, -1)} 09:00:00`);
     activity(enclosure, admin, 'Crew dispatched. Supervisor: Marcus Ramirez.', `${addDays(today, -1)} 09:02:00`);
     activity(enclosure, chris, 'Our crew is on site and working on your request.', `${today} 13:05:00`);
     job({ request_id: enclosure, property_id: maple, type: 'enclosure', title: 'Compactor room cleanup — Maple Commons', date: today, start: '13:00', end: '15:00', supervisor: marcus, techs: [chris, tyrell], status: 'in_progress', instructions: 'Pressure-wash floor, apply enzyme deodorizer, haul loose debris.' });
@@ -179,7 +179,7 @@ function seed() {
       location: 'Unit B214 (move-out)', status: 'completed',
       description: 'Full unit trash-out after move-out. Furniture left in living room and bedroom.',
     });
-    activity(trashOut, admin, `Scheduled for ${addDays(today, -3)} at 8:30 AM.`, `${addDays(today, -5)} 11:00:00`);
+    activity(trashOut, admin, `Scheduled for ${fmtLongDate(addDays(today, -3))} at 8:30 AM.`, `${addDays(today, -5)} 11:00:00`);
     activity(trashOut, admin, 'Crew dispatched. Supervisor: Dana Whitfield.', `${addDays(today, -5)} 11:05:00`);
     activity(trashOut, sam, 'Completed. Crew notes: Removed 1 sofa, 2 dressers, 14 bags. Unit is broom-swept and ready for make-ready.', `${addDays(today, -3)} 11:40:00`);
     job({ request_id: trashOut, property_id: heights, type: 'trash_out', title: 'Unit trash-out — Summit Heights B214', date: addDays(today, -3), start: '08:30', end: '11:30', supervisor: dana, techs: [sam, lena], status: 'completed', notes: 'Removed 1 sofa, 2 dressers, 14 bags. Unit is broom-swept and ready for make-ready.' });
@@ -189,7 +189,7 @@ function seed() {
       location: 'Clubhouse, pool deck, fitness center', status: 'scheduled',
       description: 'Weekly porter service: trash cans, sweep pool deck, wipe fitness equipment.',
     });
-    activity(porter, admin, `Scheduled for ${addDays(today, 2)} at 8:00 AM.`, `${addDays(today, -3)} 14:00:00`);
+    activity(porter, admin, `Scheduled for ${fmtLongDate(addDays(today, 2))} at 8:00 AM.`, `${addDays(today, -3)} 14:00:00`);
     job({ request_id: porter, property_id: lakeshore, type: 'common_area', title: 'Common area porter — Lakeshore Flats', date: addDays(today, 2), start: '08:00', end: '11:00', supervisor: dana, techs: [lena], status: 'scheduled', instructions: 'Bring microfiber kit and gym disinfectant.' });
 
     const month = (n) => {
