@@ -3,7 +3,7 @@ const { hashPassword } = require('./auth');
 const { isoDate, addDays, parseDate, fmtLongDate } = require('./helpers');
 const { NIGHTS } = require('./constants');
 
-const DEMO_PASSWORDS = { admin: 'Admin2026!', client: 'Client2026!', crew: 'Crew2026!' };
+const DEMO_PASSWORDS = { admin: 'Admin2026!', client: 'Client2026!', crew: 'Crew2026!', contractor: 'Contractor2026!' };
 
 function reset() {
   db.exec(`
@@ -49,6 +49,8 @@ function seed() {
     user('Kevin Lewis', 'maintenance@oakridgepg.com', 'client', DEMO_PASSWORDS.client, { title: 'Maintenance Supervisor', phone: '(512) 555-0302', org_id: oak });
     const erica = user('Erica Moore', 'erica@summitres.com', 'client', DEMO_PASSWORDS.client, { title: 'Community Manager', phone: '(512) 555-0401', org_id: summit });
     const luis = user('Luis Romero', 'luis@bayviewliving.com', 'client', DEMO_PASSWORDS.client, { title: 'Property Manager', phone: '(512) 555-0501', org_id: bay });
+    const andre = user('Andre Cole', 'andre@valorvalet.com', 'contractor', DEMO_PASSWORDS.contractor, { title: '1099 Contractor', phone: '(512) 555-0188' });
+    const maya = user('Maya Chen', 'maya@valorvalet.com', 'contractor', DEMO_PASSWORDS.contractor, { title: '1099 applicant', phone: '(512) 555-0189' });
 
     const prop = (orgId, p) =>
       id(
@@ -123,6 +125,25 @@ function seed() {
         });
       });
     }
+
+    const openGig = (g) => {
+      const jobId = job({ property_id: g.property, type: g.type, title: g.title, date: g.date, start: g.start, end: g.end, supervisor: null, techs: [], status: g.status || 'scheduled', instructions: g.instructions, notes: g.notes || null });
+      run('UPDATE jobs SET open_to_contractors = 1, pay_cents = ?, payout_status = ?, claimed_by = ?, claimed_at = ? WHERE id = ?', g.pay, g.payout || 'unpaid', g.claimed_by || null, g.claimed_at || null, jobId);
+      if (g.claimed_by) run('INSERT INTO job_technicians (job_id, user_id) VALUES (?, ?)', jobId, g.claimed_by);
+      return jobId;
+    };
+    openGig({ property: riverside, type: 'bulk_removal', title: 'Bulk pickup — Riverside breezeway', date: addDays(today, -1), start: '14:00', end: '15:30', pay: 7500, status: 'completed', claimed_by: andre, claimed_at: `${addDays(today, -1)} 13:00:00`, notes: 'Two chairs hauled. Breezeway clear.', instructions: 'Haul the furniture left in the breezeway.' });
+    openGig({ property: riverside, type: 'bulk_removal', title: 'Bulk pickup — Riverside Building 2', date: addDays(today, 1), start: '13:00', end: '15:00', pay: 7500, instructions: 'Sofa and two mattresses beside the Building 2 enclosure. Bring a dolly.' });
+    openGig({ property: maple, type: 'common_area', title: 'Lobby porter — Maple Commons', date: addDays(today, 2), start: '09:00', end: '12:00', pay: 7000, instructions: 'Sweep and mop the lobby, mailroom, and fitness room. Restock the lobby trash liners.' });
+    openGig({ property: heights, type: 'trash_out', title: 'Unit trash-out — Summit Heights C118', date: addDays(today, 4), start: '08:00', end: '11:00', pay: 12500, instructions: 'Full move-out clean-out. Furniture in the living room and bedroom.' });
+
+    const contractorProfile = (userId, p) => run(
+      `INSERT INTO contractor_profiles (user_id, city, state, zip, service_radius, services, nights, has_vehicle, vehicle, can_lift, tax_class, legal_name, tin_last4, payout_method, bank_name, account_last4, date_of_birth, ack_1099, ack_work_auth, ack_background, status)
+       VALUES (?, ?, 'TX', ?, 20, ?, 'Sun,Mon,Tue,Wed,Thu', 1, ?, 1, 'individual', ?, ?, 'direct_deposit', 'First National', ?, '1992-04-18', 1, 1, 1, ?)`,
+      userId, p.city, p.zip, p.services, p.vehicle, p.legal, p.tin, p.account, p.status
+    );
+    contractorProfile(andre, { city: 'Austin', zip: '78741', services: 'valet_trash,bulk_removal,common_area,trash_out,pet_station,enclosure,missed_pickup', vehicle: '2019 Ford Transit', legal: 'Andre Cole', tin: '4421', account: '9088', status: 'approved' });
+    contractorProfile(maya, { city: 'Round Rock', zip: '78664', services: 'pet_station,common_area', vehicle: '2016 Honda CR-V', legal: 'Maya Chen', tin: '7730', account: '2214', status: 'submitted' });
 
     const request = (r) => {
       const reqId = id(
@@ -225,6 +246,8 @@ function seed() {
     note(tyrell, 'New assignment: Compactor room cleanup — Maple Commons', 'Supervisor: Marcus Ramirez. Bring enzyme deodorizer.', '/crew');
     note(priya, 'Request #5: In Progress', 'Our crew is on site and working on your request.', `/portal/requests/${enclosure}`);
     note(priya, 'Request #4: Crew Dispatched', 'Crew dispatched. Supervisor: Marcus Ramirez.', `/portal/requests/${pet}`, 1);
+    note(admin, 'New 1099 application: Maya Chen', 'Round Rock, TX. Services: pet stations and common area cleanup.', `/admin/contractors/${maya}`);
+    note(andre, 'You are approved to claim gigs', 'Open the job board and pick up a posted payout.', '/work', 1);
   });
 }
 
@@ -236,6 +259,7 @@ if (require.main === module) {
   console.log(`  Client:      manager@oakridgepg.com / ${DEMO_PASSWORDS.client}`);
   console.log(`  Supervisor:  marcus@valorvalet.com / ${DEMO_PASSWORDS.crew}`);
   console.log(`  Technician:  tyrell@valorvalet.com / ${DEMO_PASSWORDS.crew}`);
+  console.log(`  Contractor:  andre@valorvalet.com / ${DEMO_PASSWORDS.contractor}`);
 }
 
 module.exports = { seed, reset, DEMO_PASSWORDS };

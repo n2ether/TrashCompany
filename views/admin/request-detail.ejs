@@ -39,6 +39,7 @@
       </div>
       <%- include('../partials/crew-fields', { selected: null }) %>
       <div class="field mt-2"><label for="instructions">Crew instructions</label><textarea id="instructions" name="instructions" placeholder="Equipment, safety notes, what &quot;done&quot; looks like"><%= r.description || '' %></textarea></div>
+      <%- include('../partials/gig-fields', { gigOpen: false, gigPay: (GIG_PAY[r.type] / 100).toFixed(2) }) %>
       <label class="check mt-2"><input type="checkbox" name="dispatch_now" value="1" checked> Forward to supervisor &amp; technicians now (email + crew app)</label>
       <div class="btn-row mt-2"><button class="btn btn--gold btn--lg" type="submit"><%- icon('send') %> Schedule job</button></div>
     </form>

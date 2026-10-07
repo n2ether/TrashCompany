@@ -1,0 +1,37 @@
+<%- include('../partials/app-start') %>
+<div class="page-head">
+  <div>
+    <h1>1099 contractors</h1>
+    <p>People who applied to claim gigs. Approve them before they can take work.</p>
+  </div>
+</div>
+<nav class="tabs" aria-label="Application status">
+  <% Object.keys(CONTRACTOR_STATUSES).forEach(function (key) {
+    const n = (counts.find(function (c) { return c.status === key; }) || {}).n || 0;
+  %>
+    <a href="/admin/contractors?status=<%= key %>" <%- status === key ? 'aria-current="page"' : '' %>><%= CONTRACTOR_STATUSES[key].label %><% if (n) { %> (<%= n %>)<% } %></a>
+  <% }) %>
+</nav>
+<div class="card card--flush">
+  <% if (!people.length) { %>
+    <div class="empty"><%- icon('users') %><h3>No one in this list</h3></div>
+  <% } else { %>
+    <div class="table-wrap">
+      <table class="table table--stack">
+        <thead><tr><th>Applicant</th><th>Area</th><th>Services</th><th>Applied</th><th>Gigs</th></tr></thead>
+        <tbody>
+          <% people.forEach(function (p) { %>
+            <tr>
+              <td data-label=""><a class="row-link" href="/admin/contractors/<%= p.id %>"><%= p.name %></a><div class="small"><%= p.email %><br><%= p.phone || '' %></div></td>
+              <td data-label="Area"><%= p.city %>, <%= p.state %><div class="muted small"><%= p.service_radius %> miles</div></td>
+              <td data-label="Services"><div class="btn-row" style="gap:.3rem"><% String(p.services || '').split(',').filter(Boolean).forEach(function (s) { %><%- typeChip(s) %><% }) %></div></td>
+              <td data-label="Applied"><%= fmtDate(p.created_at) %></td>
+              <td data-label="Gigs"><%= p.active_gigs %> open<% if (p.unpaid_cents) { %><div class="small"><%= fmtMoney(p.unpaid_cents) %> unpaid</div><% } %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</div>
+<%- include('../partials/app-end') %>

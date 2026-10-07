@@ -1,0 +1,50 @@
+<%- include('../partials/app-start') %>
+<% const status = CONTRACTOR_STATUSES[person.status] || CONTRACTOR_STATUSES.submitted; %>
+<div class="page-head">
+  <div>
+    <div class="breadcrumb"><a href="/admin/contractors">1099 Contractors</a> <%- icon('chevronRight', 'icon--sm') %> <%= person.name %></div>
+    <h1><%= person.name %></h1>
+    <p><a href="mailto:<%= person.email %>"><%= person.email %></a> &middot; <%= person.phone || 'No phone' %></p>
+  </div>
+  <span class="badge badge--<%= status.tone %>"><%- icon(status.icon, 'icon--sm') %><%= status.label %></span>
+</div>
+<div class="grid-main">
+  <div>
+    <section class="card">
+      <h2 style="font-size:1.25rem">Application</h2>
+      <dl class="dl">
+        <dt>Legal name</dt><dd><%= person.legal_name || '—' %><%= person.business_name ? ' · ' + person.business_name : '' %></dd>
+        <dt>Tax class</dt><dd><%= TAX_CLASSES[person.tax_class] || person.tax_class %></dd>
+        <dt>Tax ID</dt><dd>Last 4 only: <%= person.tin_last4 || '—' %></dd>
+        <dt>Date of birth</dt><dd><%= person.date_of_birth ? fmtDate(person.date_of_birth, { month: 'long', day: 'numeric', year: 'numeric' }) : '—' %></dd>
+        <dt>Work area</dt><dd><%= person.city %>, <%= person.state %> <%= person.zip || '' %> &middot; <%= person.service_radius %> miles</dd>
+        <dt>Availability</dt><dd><%= String(person.nights || '').split(',').join(', ') || '—' %></dd>
+        <dt>Vehicle</dt><dd><%= person.has_vehicle ? (person.vehicle || 'Yes') : 'No vehicle listed' %><%= person.can_lift ? ' · Can lift 50 lb' : '' %></dd>
+        <dt>Payout</dt><dd><%= person.payout_method === 'check' ? 'Paper check' : 'Direct deposit' %><%= person.bank_name ? ' · ' + person.bank_name : '' %><%= person.account_last4 ? ' · account ••' + person.account_last4 : '' %></dd>
+        <dt>Agreements</dt><dd>Work authorization <%= person.ack_work_auth ? 'yes' : 'no' %> &middot; 1099 <%= person.ack_1099 ? 'yes' : 'no' %> &middot; Background check <%= person.ack_background ? 'yes' : 'no' %></dd>
+        <dt>Applied</dt><dd><%= fmtDateTime(person.created_at) %></dd>
+      </dl>
+      <h3 class="mt-3" style="font-size:1rem">Services</h3>
+      <div class="btn-row"><% String(person.services || '').split(',').filter(Boolean).forEach(function (s) { %><%- typeChip(s) %><% }) %></div>
+      <% if (person.review_note) { %><p class="mt-3 mb-0"><strong>Last note:</strong> <%= person.review_note %></p><% } %>
+    </section>
+    <section class="card">
+      <h2 style="font-size:1.2rem">Gigs</h2>
+      <% if (!gigs.length) { %><p class="muted mb-0">No claimed gigs yet.</p><% } %>
+      <% gigs.forEach(function (job) { %><%- include('../partials/job-card', { job: job, href: '/admin/jobs/' + job.id }) %><% }) %>
+    </section>
+  </div>
+  <form class="card" method="post" action="/admin/contractors/<%= person.id %>/review">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <h2 style="font-size:1.2rem">Review</h2>
+    <fieldset class="mb-2">
+      <legend>Decision</legend>
+      <% Object.keys(CONTRACTOR_STATUSES).forEach(function (key) { %>
+        <label class="check"><input type="radio" name="status" value="<%= key %>" <%= person.status === key ? 'checked' : '' %>> <%= CONTRACTOR_STATUSES[key].label %></label>
+      <% }) %>
+    </fieldset>
+    <div class="field mb-2"><label for="review_note">Note to the contractor</label><textarea id="review_note" name="review_note" placeholder="Optional. They see this in their portal."><%= person.review_note || '' %></textarea></div>
+    <button class="btn btn--gold btn--block" type="submit">Save decision</button>
+  </form>
+</div>
+<%- include('../partials/app-end') %>

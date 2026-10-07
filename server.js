@@ -2,7 +2,7 @@ const path = require('node:path');
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const { get } = require('./src/db');
-const { loadUser, csrf } = require('./src/auth');
+const { loadUser, csrf, homeFor } = require('./src/auth');
 const { viewLocals } = require('./src/helpers');
 const { unreadCount } = require('./src/notify');
 
@@ -32,8 +32,10 @@ function createApp() {
         ? {
             queue: get("SELECT COUNT(*) AS n FROM service_requests WHERE status = 'submitted'").n,
             leads: get("SELECT COUNT(*) AS n FROM leads WHERE status = 'new'").n,
+            contractors: get("SELECT COUNT(*) AS n FROM contractor_profiles WHERE status = 'submitted'").n,
           }
         : null;
+    res.locals.dashboardPath = req.user ? homeFor(req.user) : '/';
     next();
   });
 
@@ -43,6 +45,7 @@ function createApp() {
   app.use('/portal', require('./src/routes/portal'));
   app.use('/admin', require('./src/routes/admin'));
   app.use('/crew', require('./src/routes/crew'));
+  app.use('/', require('./src/routes/work'));
 
   app.use((req, res) => {
     res.status(404).render('shared/error', { title: 'Page not found', message: "We couldn't find that page. Check the address or head back home." });

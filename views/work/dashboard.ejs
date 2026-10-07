@@ -1,0 +1,65 @@
+<%- include('../partials/app-start') %>
+<% const status = CONTRACTOR_STATUSES[profile.status] || CONTRACTOR_STATUSES.submitted; %>
+<div class="page-head">
+  <div>
+    <h1>Job board</h1>
+    <p><%= fmtLongDate(today) %> &middot; <%= profile.city %>, <%= profile.state %> &middot; about <%= profile.service_radius %> miles</p>
+  </div>
+  <span class="badge badge--<%= status.tone %>"><%- icon(status.icon, 'icon--sm') %><%= status.label %></span>
+</div>
+
+<% if (profile.status !== 'approved') { %>
+  <div class="alert alert--<%= profile.status === 'needs_info' || profile.status === 'declined' ? 'error' : 'info' %>">
+    <%- icon(status.icon) %>
+    <div>
+      <% if (profile.status === 'submitted') { %>We are reviewing your application. You can browse the kinds of work we post, and claiming opens up as soon as you are approved.<% } %>
+      <% if (profile.status === 'needs_info') { %><strong>We need an update.</strong> <%= profile.review_note || 'Edit your profile and send it back.' %><% } %>
+      <% if (profile.status === 'declined') { %><%= profile.review_note || 'This application was not approved.' %> You can update your profile and apply again.<% } %>
+      <% if (profile.status === 'suspended') { %><%= profile.review_note || 'Your account is suspended.' %> Contact dispatch at <%= COMPANY.phone %>.<% } %>
+      <% if (profile.status === 'needs_info' || profile.status === 'declined') { %> <a href="/work/profile">Update profile</a><% } %>
+    </div>
+  </div>
+<% } %>
+
+<div class="stats">
+  <a class="stat" href="/work/earnings"><span class="stat__icon stat__icon--gold"><%- icon('dollar') %></span><div><div class="stat__value"><%= fmtMoney(earnings.unpaid) %></div><div class="stat__label">Waiting to be paid</div></div></a>
+  <div class="stat"><span class="stat__icon"><%- icon('clock') %></span><div><div class="stat__value"><%= fmtMoney(earnings.pending) %></div><div class="stat__label">Claimed, not finished</div></div></div>
+  <div class="stat"><span class="stat__icon stat__icon--green"><%- icon('checkCircle') %></span><div><div class="stat__value"><%= fmtMoney(earnings.paid) %></div><div class="stat__label">Paid out</div></div></div>
+</div>
+
+<h2>Available gigs</h2>
+<% if (profile.status !== 'approved') { %>
+  <div class="card mb-3"><p class="mb-0">Gigs that match your services in <%= profile.state %> will show here after approval. You signed up for <% String(profile.services || '').split(',').filter(Boolean).forEach(function (s) { %><%- typeChip(s) %> <% }) %></p></div>
+<% } else if (!open.length) { %>
+  <div class="card mb-3"><div class="empty"><%- icon('calendar') %><h3>No open gigs right now</h3><p>New jobs are posted as properties request them. Check back later, or widen the services on your profile.</p></div></div>
+<% } else { %>
+  <div class="grid-2 mb-3">
+    <% open.forEach(function (job) { %>
+      <article class="card job-card job-card--<%= job.type %>" style="display:block">
+        <div class="job-card__top">
+          <span class="gig-pay"><%= fmtMoney(job.pay_cents || 0) %></span>
+          <span class="badge badge--info"><%- icon('calendar', 'icon--sm') %><%= relativeDay(job.scheduled_date) %></span>
+        </div>
+        <h3 class="job-card__title"><%= job.title %></h3>
+        <div class="job-card__meta">
+          <span><%- typeChip(job.type) %></span>
+          <span><%- icon('clock', 'icon--sm') %> <%= job.start_time ? fmtTime(job.start_time) : 'Time TBD' %><%= job.end_time ? ' – ' + fmtTime(job.end_time) : '' %></span>
+          <span><%- icon('mapPin', 'icon--sm') %> <%= job.property_name %>, <%= job.city %></span>
+        </div>
+        <a class="btn btn--gold mt-2" href="/work/jobs/<%= job.id %>">View and claim</a>
+      </article>
+    <% }) %>
+  </div>
+<% } %>
+
+<h2>Your claimed gigs</h2>
+<% if (!upcoming.length) { %>
+  <div class="card"><div class="empty"><%- icon('clipboard') %><h3>Nothing claimed yet</h3><p>Claim a gig above and it will show up here.</p></div></div>
+<% } else { %>
+  <div class="grid-2">
+    <% upcoming.forEach(function (job) { %>
+      <div><%- include('../partials/job-card', { job: job, href: '/work/jobs/' + job.id }) %></div>
+    <% }) %>
+  </div>
+<% } %>
+<%- include('../partials/app-end') %>

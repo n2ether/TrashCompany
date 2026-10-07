@@ -1,4 +1,4 @@
-const { SERVICE_TYPES, STATUSES, ROLES, COMPANY, NIGHTS, PRIORITIES, FREQUENCIES, WINDOWS } = require('./constants');
+const { SERVICE_TYPES, STATUSES, ROLES, COMPANY, NIGHTS, PRIORITIES, FREQUENCIES, WINDOWS, GIG_PAY, TAX_CLASSES, CONTRACTOR_STATUSES } = require('./constants');
 const { icon } = require('./icons');
 
 const pad = (n) => String(n).padStart(2, '0');
@@ -108,6 +108,9 @@ function viewLocals(req, res, next) {
     PRIORITIES,
     FREQUENCIES,
     WINDOWS,
+    GIG_PAY,
+    TAX_CLASSES,
+    CONTRACTOR_STATUSES,
     currentPath: req.path,
     query: req.query,
     flash: null,

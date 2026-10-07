@@ -1,0 +1,70 @@
+<%- include('../partials/app-start') %>
+<% const mapUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(job.address + ', ' + job.city + ', ' + job.state + ' ' + job.zip); %>
+<div class="page-head">
+  <div>
+    <div class="breadcrumb"><a href="/work">Job board</a> <%- icon('chevronRight', 'icon--sm') %> Gig</div>
+    <h1><%= job.property_name %></h1>
+    <p><%= relativeDay(job.scheduled_date) %>, <%= fmtLongDate(job.scheduled_date) %><%= job.start_time ? ' · ' + fmtTime(job.start_time) : '' %><%= job.end_time ? ' – ' + fmtTime(job.end_time) : '' %></p>
+  </div>
+  <span class="gig-pay"><%= fmtMoney(job.pay_cents || 0) %></span>
+</div>
+
+<div class="grid-main">
+  <section class="card">
+    <div class="card__head"><h2><%- typeChip(job.type) %> <%= job.title %></h2><%- statusBadge(job.status) %></div>
+    <% if (job.instructions) { %><div class="alert alert--info"><%- icon('clipboard') %><div><strong>What to do</strong><br><%= job.instructions %></div></div><% } %>
+    <% if (job.location_details) { %><p><strong>Where on site:</strong> <%= job.location_details %></p><% } %>
+    <% if (job.request_description && job.request_description !== job.instructions) { %><p><strong>Client notes:</strong> <%= job.request_description %></p><% } %>
+    <dl class="dl">
+      <dt>Address</dt><dd><%= job.address %>, <%= job.city %> <%= job.state %> <%= job.zip %></dd>
+      <dt>Payout</dt><dd><strong><%= fmtMoney(job.pay_cents || 0) %></strong> when the gig is complete<%= job.payout_status === 'paid' ? ' (paid)' : '' %></dd>
+      <dt>Window</dt><dd><%= job.start_time ? fmtTime(job.start_time) : 'Any time' %><%= job.end_time ? ' – ' + fmtTime(job.end_time) : '' %></dd>
+      <% if (mine) { %>
+        <dt>Access</dt><dd><%= job.access_notes || 'No access notes on file' %></dd>
+        <dt>Onsite contact</dt><dd><%= job.onsite_contact || '—' %></dd>
+      <% } %>
+    </dl>
+    <% if (!mine) { %><p class="muted">Gate codes and the onsite contact unlock after you claim this gig.</p><% } %>
+    <% if (mine) { %><a class="btn btn--outline btn--lg mt-2" href="<%= mapUrl %>" target="_blank" rel="noopener"><%- icon('mapPin') %> Directions</a><% } %>
+  </section>
+  <aside>
+    <% if (job.status === 'completed' && mine) { %>
+      <section class="card"><div class="alert alert--success mb-0"><%- icon('checkCircle') %><div><strong>Complete.</strong> <%= job.payout_status === 'paid' ? 'This payout is marked paid.' : 'Payout of ' + fmtMoney(job.pay_cents || 0) + ' is waiting.' %><% if (job.completion_notes) { %><br><%= job.completion_notes %><% } %></div></div></section>
+    <% } else if (mine) { %>
+      <section class="card card--accent">
+        <h2 style="font-size:1.2rem">This gig is yours</h2>
+        <% if (job.status !== 'in_progress') { %>
+          <form method="post" action="/work/jobs/<%= job.id %>/status" class="mb-2">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="status" value="in_progress">
+            <button class="btn btn--lg btn--block" type="submit"><%- icon('play') %> Start gig</button>
+          </form>
+        <% } %>
+        <form method="post" action="/work/jobs/<%= job.id %>/status">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="status" value="completed">
+          <div class="field mb-2"><label for="notes">Completion notes</label><textarea id="notes" name="notes" placeholder="What you hauled, anything the property should know"></textarea></div>
+          <button class="btn btn--success btn--lg btn--block" type="submit"><%- icon('checkCircle') %> Mark complete</button>
+        </form>
+        <% if (job.status !== 'in_progress') { %>
+          <form method="post" action="/work/jobs/<%= job.id %>/release" class="mt-2" data-confirm="Release this gig so someone else can claim it?">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button class="btn btn--ghost btn--block" type="submit">Release gig</button>
+          </form>
+        <% } %>
+      </section>
+    <% } else if (!approved) { %>
+      <section class="card"><div class="alert alert--warn mb-0"><%- icon('clock') %><div>You can claim gigs after your application is approved.</div></div></section>
+    <% } else if (job.claimed_by) { %>
+      <section class="card"><div class="alert alert--info mb-0"><%- icon('users') %><div>Another contractor already claimed this gig.</div></div></section>
+    <% } else { %>
+      <section class="card card--accent">
+        <h2 style="font-size:1.2rem">Claim for <%= fmtMoney(job.pay_cents || 0) %></h2>
+        <p>Claiming assigns this gig to you. The property is notified that a crew is on the way.</p>
+        <form method="post" action="/work/jobs/<%= job.id %>/claim">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button class="btn btn--gold btn--lg btn--block" type="submit"><%- icon('check') %> Claim this gig</button>
+        </form>
+      </section>
+    <% } %>
+  </aside>
+</div>
+<%- include('../partials/app-end') %>

@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS users (
   email TEXT NOT NULL UNIQUE COLLATE NOCASE,
   phone TEXT,
   password_hash TEXT NOT NULL,
-  role TEXT NOT NULL CHECK (role IN ('client','admin','supervisor','technician')),
+  role TEXT NOT NULL CHECK (role IN ('client','admin','supervisor','technician','contractor')),
   title TEXT,
   org_id INTEGER REFERENCES organizations(id) ON DELETE CASCADE,
   active INTEGER DEFAULT 1,
@@ -102,6 +102,11 @@ CREATE TABLE IF NOT EXISTS jobs (
   dispatched_at TEXT,
   started_at TEXT,
   completed_at TEXT,
+  open_to_contractors INTEGER DEFAULT 0,
+  pay_cents INTEGER,
+  claimed_by INTEGER,
+  claimed_at TEXT,
+  payout_status TEXT DEFAULT 'unpaid',
   created_at TEXT DEFAULT (datetime('now'))
 );
 
@@ -155,10 +160,84 @@ CREATE TABLE IF NOT EXISTS leads (
   created_at TEXT DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS contractor_profiles (
+  user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  city TEXT,
+  state TEXT,
+  zip TEXT,
+  service_radius INTEGER DEFAULT 15,
+  services TEXT,
+  nights TEXT,
+  has_vehicle INTEGER DEFAULT 0,
+  vehicle TEXT,
+  can_lift INTEGER DEFAULT 0,
+  tax_class TEXT,
+  legal_name TEXT,
+  business_name TEXT,
+  tin_last4 TEXT,
+  payout_method TEXT DEFAULT 'direct_deposit',
+  bank_name TEXT,
+  account_last4 TEXT,
+  date_of_birth TEXT,
+  ack_1099 INTEGER DEFAULT 0,
+  ack_work_auth INTEGER DEFAULT 0,
+  ack_background INTEGER DEFAULT 0,
+  status TEXT DEFAULT 'submitted',
+  review_note TEXT,
+  reviewed_at TEXT,
+  created_at TEXT DEFAULT (datetime('now'))
+);
+
 CREATE INDEX IF NOT EXISTS idx_jobs_date ON jobs(scheduled_date);
+CREATE INDEX IF NOT EXISTS idx_contractor_status ON contractor_profiles(status);
 CREATE INDEX IF NOT EXISTS idx_requests_org ON service_requests(org_id, status);
 CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, read);
 `);
+
+function migrate() {
+  const usersSql = db.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'users'").get();
+  if (usersSql && !usersSql.sql.includes("'contractor'")) {
+    db.exec('PRAGMA foreign_keys = OFF');
+    db.exec('BEGIN');
+    try {
+      db.exec(`CREATE TABLE users_new (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL UNIQUE COLLATE NOCASE,
+        phone TEXT,
+        password_hash TEXT NOT NULL,
+        role TEXT NOT NULL CHECK (role IN ('client','admin','supervisor','technician','contractor')),
+        title TEXT,
+        org_id INTEGER REFERENCES organizations(id) ON DELETE CASCADE,
+        active INTEGER DEFAULT 1,
+        created_at TEXT DEFAULT (datetime('now'))
+      )`);
+      db.exec(`INSERT INTO users_new (id, name, email, phone, password_hash, role, title, org_id, active, created_at)
+               SELECT id, name, email, phone, password_hash, role, title, org_id, active, created_at FROM users`);
+      db.exec('DROP TABLE users');
+      db.exec('ALTER TABLE users_new RENAME TO users');
+      db.exec('COMMIT');
+    } catch (err) {
+      db.exec('ROLLBACK');
+      db.exec('PRAGMA foreign_keys = ON');
+      throw err;
+    }
+    db.exec('PRAGMA foreign_keys = ON');
+  }
+  const cols = new Set(db.prepare('PRAGMA table_info(jobs)').all().map((c) => c.name));
+  for (const [name, def] of [
+    ['open_to_contractors', 'INTEGER DEFAULT 0'],
+    ['pay_cents', 'INTEGER'],
+    ['claimed_by', 'INTEGER'],
+    ['claimed_at', 'TEXT'],
+    ['payout_status', "TEXT DEFAULT 'unpaid'"],
+  ]) {
+    if (!cols.has(name)) db.exec(`ALTER TABLE jobs ADD COLUMN ${name} ${def}`);
+  }
+  db.exec('CREATE INDEX IF NOT EXISTS idx_jobs_open ON jobs(open_to_contractors, claimed_by, status)');
+}
+
+migrate();
 
 const all = (sql, ...params) => db.prepare(sql).all(...params);
 const get = (sql, ...params) => db.prepare(sql).get(...params);

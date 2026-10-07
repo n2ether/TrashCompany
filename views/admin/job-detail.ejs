@@ -17,7 +17,11 @@
   </div>
 </div>
 
-<% if (job.dispatched_at) { %>
+<% if (job.open_to_contractors && !job.claimed_by && !closed) { %>
+  <div class="alert alert--info"><%- icon('dollar') %><div>On the contractor job board<% if (job.pay_cents) { %> for <strong><%= fmtMoney(job.pay_cents) %></strong><% } %>. It stays open until a 1099 contractor claims it.</div></div>
+<% } else if (job.claimed_name) { %>
+  <div class="alert alert--success"><%- icon('user') %><div>Claimed by <strong><%= job.claimed_name %></strong><%= job.claimed_at ? ' on ' + fmtDateTime(job.claimed_at) : '' %><%= job.pay_cents ? '. Payout ' + fmtMoney(job.pay_cents) + (job.payout_status === 'paid' ? ' (paid)' : ' (unpaid)') : '' %>.</div></div>
+<% } else if (job.dispatched_at) { %>
   <div class="alert alert--info"><%- icon('send') %><div>Forwarded to <%= job.supervisor_name || 'supervisor' %><%= job.technician_names ? ' and ' + job.technician_names : '' %> on <%= fmtDateTime(job.dispatched_at) %>.</div></div>
 <% } else if (!closed) { %>
   <div class="alert alert--warn"><%- icon('alert') %><div>Not yet sent to the crew. They won't see this job until it is forwarded.</div></div>
@@ -37,6 +41,7 @@
       </div>
       <%- include('../partials/crew-fields', { selected: { supervisor_id: job.supervisor_id, technician_ids: job.technicians.map(function (t) { return t.id; }) } }) %>
       <div class="field mt-2"><label for="instructions">Crew instructions</label><textarea id="instructions" name="instructions"><%= job.instructions || '' %></textarea></div>
+      <%- include('../partials/gig-fields', { gigOpen: !!job.open_to_contractors, gigPay: job.pay_cents ? (job.pay_cents / 100).toFixed(2) : '' }) %>
       <button class="btn mt-2" type="submit">Save changes<%= job.dispatched_at ? ' & notify crew' : '' %></button>
     </form>
     <% } else { %>
@@ -59,6 +64,18 @@
       <p class="small"><strong>Onsite:</strong> <%= job.onsite_contact || '—' %></p>
       <p class="small mb-0"><strong>Access:</strong> <%= job.access_notes || '—' %></p>
       <% if (job.request_id) { %><a class="btn btn--outline btn--sm mt-2" href="/admin/requests/<%= job.request_id %>">View request #<%= job.request_id %></a><% } %>
+      <% if (job.claimed_by && !closed && job.status !== 'in_progress') { %>
+        <form method="post" action="/admin/jobs/<%= job.id %>/release" class="mt-2" data-confirm="Return this gig to the job board?">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button class="btn btn--outline btn--block" type="submit">Return to job board</button>
+        </form>
+      <% } %>
+      <% if (job.claimed_by && job.status === 'completed' && job.payout_status !== 'paid') { %>
+        <form method="post" action="/admin/jobs/<%= job.id %>/payout" class="mt-2">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button class="btn btn--block" type="submit"><%- icon('dollar') %> Mark payout paid</button>
+        </form>
+      <% } %>
     </section>
     <% if (!closed) { %>
       <section class="card">

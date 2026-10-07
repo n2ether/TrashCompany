@@ -67,6 +67,7 @@ test('every role lands on its own dashboard and pages render', async () => {
     'admin@valorvalet.com': ['Admin2026!', '/admin', ['/admin', '/admin/requests', '/admin/requests?status=all', '/admin/requests/1', '/admin/requests/6', '/admin/schedule', '/admin/schedule/day', '/admin/jobs/new', '/admin/jobs/1', '/admin/clients', '/admin/clients/1', '/admin/team', '/admin/leads', '/admin/outbox', '/notifications']],
     'marcus@valorvalet.com': ['Crew2026!', '/crew', ['/crew', '/notifications']],
     'tyrell@valorvalet.com': ['Crew2026!', '/crew', ['/crew']],
+    'andre@valorvalet.com': ['Contractor2026!', '/work', ['/work', '/work/earnings', '/work/profile', '/notifications']],
   };
   for (const [email, [pw, home, urls]] of Object.entries(pages)) {
     const c = client();
@@ -83,6 +84,7 @@ test('role boundaries are enforced', async () => {
   await c.login('manager@oakridgepg.com', 'Client2026!');
   assert.strictEqual((await c.get('/admin')).status, 403);
   assert.strictEqual((await c.get('/crew')).status, 403);
+  assert.strictEqual((await c.get('/work')).status, 403);
   assert.strictEqual((await c.get('/portal/requests/3')).status, 404, 'client cannot view another org request');
 
   const anon = client();
@@ -207,4 +209,65 @@ test('new clients can register and quote requests reach admin', async () => {
   const lead = await client().post('/contact', { name: 'Ann', email: 'ann@example.com', units: '90', services: ['valet_trash'] });
   assert.strictEqual(lead.status, 200);
   assert.ok(get("SELECT id FROM leads WHERE email = 'ann@example.com'"));
+});
+
+test('1099 contractors apply, get approved, and claim a posted gig', async () => {
+  const anon = client();
+  const page = await anon.get('/join');
+  assert.strictEqual(page.status, 200);
+  assert.match(page.text, /independent contractor/i);
+
+  const rejected = await anon.post('/join', {
+    name: 'No Ack', email: 'noack@example.com', password: 'longpassword', phone: '5125550000',
+    city: 'Austin', state: 'TX', date_of_birth: '1990-01-01', legal_name: 'No Ack', tin_last4: '1234',
+    services: ['bulk_removal'], nights: ['Mon'], account_last4: '9999',
+  });
+  assert.strictEqual(rejected.status, 422, 'agreements are required');
+
+  const applied = await anon.post('/join', {
+    name: 'Riley Santos', email: 'riley@example.com', password: 'longpassword', phone: '(512) 555-0199',
+    city: 'Austin', state: 'tx', zip: '78702', date_of_birth: '1994-06-01', legal_name: 'Riley Santos',
+    tin_last4: '1234', services: ['bulk_removal', 'common_area'], nights: ['Mon', 'Tue'],
+    account_last4: '4242', bank_name: 'Test Bank', has_vehicle: '1', can_lift: '1',
+    ack_work_auth: '1', ack_1099: '1', ack_background: '1', tax_class: 'individual', payout_method: 'direct_deposit',
+  });
+  assert.strictEqual(applied.status, 302);
+  assert.strictEqual(applied.location, '/work');
+  assert.match((await anon.get('/work')).text, /review/i);
+  const stored = get("SELECT tin_last4, account_last4 FROM contractor_profiles WHERE user_id = (SELECT id FROM users WHERE email = 'riley@example.com')");
+  assert.strictEqual(stored.tin_last4, '1234');
+  assert.strictEqual(stored.account_last4, '4242');
+
+  const gig = get("SELECT id FROM jobs WHERE open_to_contractors = 1 AND claimed_by IS NULL AND type = 'bulk_removal' AND status = 'scheduled'");
+  assert.ok(gig, 'an open gig exists');
+  await anon.post(`/work/jobs/${gig.id}/claim`);
+  assert.strictEqual(get('SELECT claimed_by FROM jobs WHERE id = ?', gig.id).claimed_by, null, 'pending applicants cannot claim');
+
+  const admin = client();
+  await admin.login('admin@valorvalet.com', 'Admin2026!');
+  const riley = get("SELECT id FROM users WHERE email = 'riley@example.com'");
+  assert.strictEqual((await admin.get('/admin/contractors')).status, 200);
+  assert.strictEqual((await admin.get(`/admin/contractors/${riley.id}`)).status, 200);
+  await admin.post(`/admin/contractors/${riley.id}/review`, { status: 'approved', review_note: 'Welcome aboard.' });
+  assert.strictEqual(get('SELECT status FROM contractor_profiles WHERE user_id = ?', riley.id).status, 'approved');
+
+  const claim = await anon.post(`/work/jobs/${gig.id}/claim`);
+  assert.strictEqual(claim.status, 302);
+  assert.strictEqual(get('SELECT claimed_by, status FROM jobs WHERE id = ?', gig.id).claimed_by, riley.id);
+  assert.match((await anon.get(`/work/jobs/${gig.id}`)).text, /This gig is yours/);
+
+  const other = client();
+  await other.login('andre@valorvalet.com', 'Contractor2026!');
+  await other.post(`/work/jobs/${gig.id}/claim`);
+  assert.strictEqual(get('SELECT claimed_by FROM jobs WHERE id = ?', gig.id).claimed_by, riley.id, 'a second contractor cannot take a claimed gig');
+
+  await anon.post(`/work/jobs/${gig.id}/status`, { status: 'completed', notes: 'Hauled the sofa.' });
+  const done = get('SELECT status, payout_status, completion_notes FROM jobs WHERE id = ?', gig.id);
+  assert.strictEqual(done.status, 'completed');
+  assert.strictEqual(done.payout_status, 'unpaid');
+  assert.match(done.completion_notes, /Hauled the sofa/);
+  assert.match((await anon.get('/work/earnings')).text, /\$75\.00|Waiting to be paid/);
+
+  await admin.post(`/admin/jobs/${gig.id}/payout`);
+  assert.strictEqual(get('SELECT payout_status FROM jobs WHERE id = ?', gig.id).payout_status, 'paid');
 });

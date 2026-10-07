@@ -3,7 +3,7 @@
   <div class="auth__form">
     <div>
       <h1>Sign in</h1>
-      <p class="muted">Property clients, operations staff, supervisors, and technicians all sign in here.</p>
+      <p class="muted">Property clients, contractors, supervisors, and the operations team all sign in here.</p>
       <%- include('../partials/flash') %>
       <form method="post" action="/login" novalidate>
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
@@ -18,7 +18,7 @@
         </div>
         <button class="btn btn--gold btn--lg btn--block" type="submit">Sign in</button>
       </form>
-      <p class="mt-3 center">New client? <a href="/register"><strong>Create an account</strong></a></p>
+      <p class="mt-3 center">New client? <a href="/register"><strong>Create an account</strong></a><br>Want to pick up gigs? <a href="/join"><strong>Apply as a 1099 contractor</strong></a></p>
 
       <div class="demo-accounts">
         <strong><%- icon('info', 'icon--sm') %> Demo accounts</strong>
@@ -28,6 +28,7 @@
             <tr><td>Admin / dispatch</td><td><button type="button" data-fill-login data-email="admin@valorvalet.com" data-password="Admin2026!">admin@valorvalet.com</button></td></tr>
             <tr><td>Field supervisor</td><td><button type="button" data-fill-login data-email="marcus@valorvalet.com" data-password="Crew2026!">marcus@valorvalet.com</button></td></tr>
             <tr><td>Technician</td><td><button type="button" data-fill-login data-email="tyrell@valorvalet.com" data-password="Crew2026!">tyrell@valorvalet.com</button></td></tr>
+            <tr><td>1099 contractor</td><td><button type="button" data-fill-login data-email="andre@valorvalet.com" data-password="Contractor2026!">andre@valorvalet.com</button></td></tr>
           </tbody>
         </table>
       </div>

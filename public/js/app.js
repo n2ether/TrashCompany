@@ -56,6 +56,18 @@
     typeInputs.forEach(function (i) { i.addEventListener('change', syncType); });
     if (typeInputs.length) syncType();
 
+    var gigToggle = document.querySelector('[data-gig-toggle]');
+    var gigPanel = document.querySelector('[data-gig-panel]');
+    var supervisor = document.getElementById('supervisor_id');
+    if (gigToggle) {
+      var syncGig = function () {
+        if (gigPanel) gigPanel.hidden = !gigToggle.checked;
+        if (supervisor) supervisor.required = !gigToggle.checked;
+      };
+      gigToggle.addEventListener('change', syncGig);
+      syncGig();
+    }
+
     var repeat = document.querySelector('[data-repeat-toggle]');
     var repeatPanel = document.querySelector('[data-repeat-panel]');
     if (repeat && repeatPanel) {

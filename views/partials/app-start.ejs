@@ -19,6 +19,7 @@
       { href: '/admin/jobs/new', label: 'Create Job', icon: 'plus' },
       { href: '/admin/clients', label: 'Clients', icon: 'building' },
       { href: '/admin/team', label: 'Fulfillment Team', icon: 'users' },
+      { href: '/admin/contractors', label: '1099 Contractors', icon: 'dollar', count: navCounts && navCounts.contractors },
       { href: '/admin/leads', label: 'Quote Requests', icon: 'mail', count: navCounts && navCounts.leads },
       { href: '/admin/outbox', label: 'Email Log', icon: 'send' },
       { href: '/notifications', label: 'Notifications', icon: 'bell', count: unread },
@@ -27,9 +28,15 @@
       { href: '/crew', label: 'My Assignments', icon: 'route', exact: true },
       { href: '/notifications', label: 'Notifications', icon: 'bell', count: unread },
     ],
+    contractor: [
+      { href: '/work', label: 'Job board', icon: 'dollar', exact: true },
+      { href: '/work/earnings', label: 'Earnings', icon: 'receipt' },
+      { href: '/work/profile', label: 'My profile', icon: 'user' },
+      { href: '/notifications', label: 'Notifications', icon: 'bell', count: unread },
+    ],
   };
   const nav = navs[role] || navs.crew;
-  const home = role === 'admin' ? '/admin' : role === 'client' ? '/portal' : '/crew';
+  const home = dashboardPath;
   const isActive = (n) => n.exact ? currentPath === n.href : (currentPath === n.href || currentPath.startsWith(n.href + '/')) && currentPath !== n.exclude;
 %>
 <body>
@@ -56,7 +63,7 @@
     <header class="appbar">
       <div class="appbar__left">
         <button class="icon-btn menu-btn" type="button" aria-label="Open menu" aria-controls="sidebar" aria-expanded="false" data-sidebar-toggle><%- icon('menu') %></button>
-        <span class="appbar__org"><%= user.org_name || (role === 'admin' ? 'Operations Center' : 'Field Operations') %></span>
+        <span class="appbar__org"><%= user.org_name || (role === 'admin' ? 'Operations Center' : role === 'contractor' ? '1099 contractor' : 'Field Operations') %></span>
       </div>
       <div class="appbar__right">
         <a class="icon-btn" href="/notifications" aria-label="Notifications<%= unread ? ` (${unread} unread)` : '' %>">

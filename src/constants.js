@@ -92,6 +92,35 @@ const ROLES = {
   admin: 'Administrator',
   supervisor: 'Field Supervisor',
   technician: 'Service Technician',
+  contractor: '1099 Contractor',
+};
+
+// Posted payout for an open gig, in cents. Contractors claim these like a TaskRabbit job.
+const GIG_PAY = {
+  missed_pickup: 3500,
+  valet_trash: 8500,
+  bulk_removal: 7500,
+  common_area: 7000,
+  pet_station: 4500,
+  enclosure: 6500,
+  trash_out: 12500,
+  other: 6000,
+};
+
+const TAX_CLASSES = {
+  individual: 'Individual / sole proprietor',
+  llc: 'Single-member LLC',
+  c_corp: 'C corporation',
+  s_corp: 'S corporation',
+  partnership: 'Partnership',
+};
+
+const CONTRACTOR_STATUSES = {
+  submitted: { label: 'In review', tone: 'amber', icon: 'clock' },
+  needs_info: { label: 'Needs information', tone: 'red', icon: 'alert' },
+  approved: { label: 'Approved to claim gigs', tone: 'success', icon: 'check' },
+  declined: { label: 'Not approved', tone: 'muted', icon: 'x' },
+  suspended: { label: 'Suspended', tone: 'muted', icon: 'x' },
 };
 
 const COMPANY = {
@@ -103,4 +132,16 @@ const COMPANY = {
   serviceArea: 'Serving apartment & multifamily communities nationwide',
 };
 
-module.exports = { SERVICE_TYPES, STATUSES, PRIORITIES, FREQUENCIES, WINDOWS, NIGHTS, ROLES, COMPANY };
+module.exports = {
+  SERVICE_TYPES,
+  STATUSES,
+  PRIORITIES,
+  FREQUENCIES,
+  WINDOWS,
+  NIGHTS,
+  ROLES,
+  COMPANY,
+  GIG_PAY,
+  TAX_CLASSES,
+  CONTRACTOR_STATUSES,
+};

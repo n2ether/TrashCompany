@@ -2292,6 +2292,13 @@ a.job-card:hover {
   align-items: flex-start;
   flex-wrap: wrap;
 }
+.gig-pay {
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: 1.7rem;
+  color: var(--navy-900);
+  line-height: 1.1;
+}
 .job-card__time {
   font-weight: 800;
   color: var(--navy-900);
