@@ -1,0 +1,23 @@
+<%- include('../partials/app-start') %>
+<div class="page-head">
+  <div>
+    <h1>My profile</h1>
+    <p>Signed in as <%= form.email %>. The services and state here decide which gigs you see.</p>
+  </div>
+</div>
+<form class="card" method="post" action="/work/profile" novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <%- include('../partials/flash') %>
+  <div class="form-section">
+    <h2><span class="step-num">1</span> Contact</h2>
+    <div class="form-grid">
+      <div class="field"><label for="name">Full name</label><input id="name" name="name" type="text" required value="<%= form.name || '' %>"></div>
+      <div class="field"><label for="phone">Mobile phone</label><input id="phone" name="phone" type="tel" required value="<%= form.phone || '' %>"></div>
+      <div class="field"><label for="email">Email</label><input id="email" type="email" value="<%= form.email %>" disabled></div>
+      <div class="field"><label for="date_of_birth">Date of birth</label><input id="date_of_birth" name="date_of_birth" type="date" required value="<%= form.date_of_birth || '' %>"></div>
+    </div>
+  </div>
+  <%- include('../partials/contractor-fields', { account: false }) %>
+  <button class="btn btn--gold btn--lg" type="submit"><%= profile.status === 'needs_info' || profile.status === 'declined' ? 'Save and resubmit' : 'Save profile' %></button>
+</form>
+<%- include('../partials/app-end') %>

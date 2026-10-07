@@ -84,6 +84,7 @@ function homeFor(user) {
   if (!user) return '/login';
   if (user.role === 'admin') return '/admin';
   if (user.role === 'client') return '/portal';
+  if (user.role === 'contractor') return '/work';
   return '/crew';
 }
 

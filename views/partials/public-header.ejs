@@ -18,8 +18,9 @@
       <a href="/how-it-works" <%- currentPath === '/how-it-works' ? 'aria-current="page"' : '' %>>How It Works</a>
       <a href="/mission" <%- currentPath === '/mission' ? 'aria-current="page"' : '' %>>Our Mission</a>
       <a href="/contact" <%- currentPath === '/contact' ? 'aria-current="page"' : '' %>>Get a Quote</a>
+      <a href="/join" <%- currentPath === '/join' ? 'aria-current="page"' : '' %>>Work with us</a>
       <% if (user) { %>
-        <a class="btn btn--sm" href="<%= user.role === 'admin' ? '/admin' : user.role === 'client' ? '/portal' : '/crew' %>"><%- icon('grid', 'icon--sm') %> My Dashboard</a>
+        <a class="btn btn--sm" href="<%= dashboardPath %>"><%- icon('grid', 'icon--sm') %> My Dashboard</a>
       <% } else { %>
         <a class="btn btn--outline btn--sm" href="/login"><%- icon('user', 'icon--sm') %> Client Login</a>
         <a class="btn btn--gold btn--sm" href="/contact">Free Quote</a>

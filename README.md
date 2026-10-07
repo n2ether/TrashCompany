@@ -2,7 +2,7 @@
 
 A complete web platform for a **Disabled Veteran Owned Small Business (DVOSB)** that provides doorstep valet trash and common area cleanup for apartment and multifamily communities. A portion of profits supports homeless veteran housing programs, and that pledge appears across the marketing site and portals.
 
-It includes four experiences in one app:
+It includes five experiences in one app:
 
 | Who | Where | What they can do |
 | --- | --- | --- |
@@ -10,6 +10,7 @@ It includes four experiences in one app:
 | Property clients | `/portal` | Request service, report missed pickups, track status, view schedules, manage properties, invite teammates, view invoices |
 | Admin / dispatch | `/admin` | Triage the request queue, schedule jobs, assign a supervisor + technicians, build recurring routes, forward schedules to crews, print run sheets, manage clients, team, leads, and billing |
 | Supervisors & technicians | `/crew` | See today's and upcoming assignments, get directions and access codes, start/complete jobs with notes; supervisors can brief their crew |
+| 1099 contractors | `/join`, `/work` | Apply as an independent contractor, get approved, claim open gigs at a posted payout, and track earnings |
 
 ## Quick start
 
@@ -32,6 +33,7 @@ The server seeds demo data automatically on first start if the database is empty
 | Admin / dispatch | `admin@valorvalet.com` | `Admin2026!` |
 | Field supervisor | `marcus@valorvalet.com` | `Crew2026!` |
 | Technician | `tyrell@valorvalet.com` | `Crew2026!` |
+| 1099 contractor | `andre@valorvalet.com` | `Contractor2026!` |
 
 The login page has one-click buttons that fill these in.
 
@@ -54,6 +56,15 @@ The login page has one-click buttons that fill these in.
 4. Technicians tap **Start job** (`In Progress`) and **Mark complete** with notes (`Completed`). The client sees every step on a progress tracker and activity timeline, and gets notified at each one.
 
 Recurring nightly valet routes are created from **Create Job → Repeat on selected nights** (up to 13 weeks at a time).
+
+### 1099 contractor job board
+
+1. Someone applies at **Work with us** (`/join`) with their service area, the work they can do, a 1099 acknowledgment, and the last four digits of a tax ID and bank account. Full Social Security numbers and full account numbers are not stored.
+2. An admin reviews the application under **1099 Contractors** and approves, asks for more information, or declines. The applicant is notified.
+3. Approved contractors see open gigs that match their services and state, with the payout shown up front. Claiming a gig assigns it to them. Gate codes stay hidden until then.
+4. They start and complete the gig from the contractor portal. The payout stays unpaid until an admin marks it paid on the job.
+
+Post a gig from **Create Job** or from a service request by checking **Post on the 1099 contractor job board** and setting a payout. A supervisor is optional for those jobs. Dispatching a whole day leaves unclaimed gigs on the board.
 
 ## UX research summary
 

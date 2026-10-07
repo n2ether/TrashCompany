@@ -1,0 +1,29 @@
+<%- include('../partials/public-header') %>
+<section class="page-hero">
+  <div class="container">
+    <span class="eyebrow eyebrow--gold"><%- icon('dollar', 'icon--sm') %> 1099 contractors</span>
+    <h1>Pick up work when you want it</h1>
+    <p class="lead">Valor Valet pays independent contractors per gig, the same way TaskRabbit and Uber pay for a completed job. Claim a posted payout, do the work, and get paid. No guaranteed hours, and you are your own boss.</p>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <div class="grid-3 mb-3">
+      <div class="card"><h3><%- icon('clipboard') %> 1. Apply</h3><p class="mb-0">Tell us where you work, which services you can do, and confirm you are a 1099 contractor.</p></div>
+      <div class="card"><h3><%- icon('checkCircle') %> 2. Get approved</h3><p class="mb-0">We review your application and run a background check. Most decisions come back within one business day.</p></div>
+      <div class="card"><h3><%- icon('dollar') %> 3. Claim gigs</h3><p class="mb-0">Open the job board, claim a job at the posted price, and mark it complete when you are done.</p></div>
+    </div>
+    <% if (user) { %>
+      <div class="alert alert--info"><%- icon('info') %><div>You are signed in as <%= user.name %>. Sign out before applying as a contractor.</div></div>
+    <% } else { %>
+      <form class="card" method="post" action="/join" novalidate>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <%- include('../partials/flash') %>
+        <%- include('../partials/contractor-fields', { account: true }) %>
+        <button class="btn btn--gold btn--lg" type="submit">Submit application</button>
+        <p class="mt-2 mb-0">Already approved? <a href="/login"><strong>Sign in</strong></a></p>
+      </form>
+    <% } %>
+  </div>
+</section>
+<%- include('../partials/public-footer') %>

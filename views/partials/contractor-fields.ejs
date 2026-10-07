@@ -1,0 +1,81 @@
+<%
+  const f = form || {};
+  const services = Array.isArray(f.services) ? f.services : String(f.services || '').split(',');
+  const nights = Array.isArray(f.nights) ? f.nights : String(f.nights || '').split(',');
+  const showAccount = typeof account !== 'undefined' ? account : true;
+%>
+<% if (showAccount) { %>
+<div class="form-section">
+  <h2><span class="step-num">1</span> Your account</h2>
+  <div class="form-grid">
+    <div class="field"><label for="name">Full name <span class="req" aria-hidden="true">*</span></label><input id="name" name="name" type="text" autocomplete="name" required value="<%= f.name || '' %>"></div>
+    <div class="field"><label for="phone">Mobile phone <span class="req" aria-hidden="true">*</span></label><input id="phone" name="phone" type="tel" autocomplete="tel" required value="<%= f.phone || '' %>"></div>
+    <div class="field"><label for="email">Email <span class="req" aria-hidden="true">*</span></label><input id="email" name="email" type="email" autocomplete="email" required value="<%= f.email || '' %>" <%= typeof lockEmail !== 'undefined' && lockEmail ? 'disabled' : '' %>></div>
+    <% if (!(typeof lockEmail !== 'undefined' && lockEmail)) { %>
+      <div class="field"><label for="password">Password <span class="req" aria-hidden="true">*</span></label><input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required><span class="hint">At least 8 characters.</span></div>
+    <% } %>
+    <div class="field"><label for="date_of_birth">Date of birth <span class="req" aria-hidden="true">*</span></label><input id="date_of_birth" name="date_of_birth" type="date" required value="<%= f.date_of_birth || '' %>"><span class="hint">You must be 18 or older.</span></div>
+  </div>
+</div>
+<% } %>
+<div class="form-section">
+  <h2><span class="step-num">2</span> Where you work</h2>
+  <div class="form-grid">
+    <div class="field"><label for="city">City <span class="req" aria-hidden="true">*</span></label><input id="city" name="city" type="text" required value="<%= f.city || '' %>"></div>
+    <div class="field"><label for="state">State <span class="req" aria-hidden="true">*</span></label><input id="state" name="state" type="text" maxlength="2" required value="<%= f.state || '' %>" placeholder="TX"></div>
+    <div class="field"><label for="zip">ZIP</label><input id="zip" name="zip" type="text" inputmode="numeric" value="<%= f.zip || '' %>"></div>
+    <div class="field"><label for="service_radius">How far you will travel (miles)</label><input id="service_radius" name="service_radius" type="number" min="5" max="100" value="<%= f.service_radius || 15 %>"></div>
+  </div>
+  <fieldset class="mt-3">
+    <legend>Services you can do <span class="req" aria-hidden="true">*</span></legend>
+    <div class="check-row">
+      <% Object.keys(SERVICE_TYPES).filter(function (k) { return k !== 'other'; }).forEach(function (k) { %>
+        <label class="check"><input type="checkbox" name="services" value="<%= k %>" <%= services.includes(k) ? 'checked' : '' %>> <%= SERVICE_TYPES[k].label %></label>
+      <% }) %>
+    </div>
+  </fieldset>
+  <fieldset class="mt-3">
+    <legend>Days you are available <span class="req" aria-hidden="true">*</span></legend>
+    <div class="day-picker">
+      <% NIGHTS.forEach(function (n) { %><label><input type="checkbox" name="nights" value="<%= n %>" <%= nights.includes(n) ? 'checked' : '' %>><span><%= n %></span></label><% }) %>
+    </div>
+    <span class="hint">Most valet routes run Sunday through Thursday evenings.</span>
+  </fieldset>
+</div>
+<div class="form-section">
+  <h2><span class="step-num">3</span> Gear</h2>
+  <label class="check"><input type="checkbox" name="has_vehicle" value="1" <%= f.has_vehicle ? 'checked' : '' %>> I have a reliable vehicle</label>
+  <div class="field mt-2"><label for="vehicle">Vehicle (year, make, type)</label><input id="vehicle" name="vehicle" type="text" placeholder="2018 Ford Transit van" value="<%= f.vehicle || '' %>"></div>
+  <label class="check"><input type="checkbox" name="can_lift" value="1" <%= f.can_lift ? 'checked' : '' %>> I can lift 50 pounds</label>
+</div>
+<div class="form-section">
+  <h2><span class="step-num">4</span> Tax and payout</h2>
+  <p class="hint">We store only the last four digits. A payroll partner collects the full tax ID and bank account after you are approved. Do not type a full Social Security number here.</p>
+  <div class="form-grid">
+    <div class="field"><label for="legal_name">Legal name <span class="req" aria-hidden="true">*</span></label><input id="legal_name" name="legal_name" type="text" required value="<%= f.legal_name || f.name || '' %>"></div>
+    <div class="field"><label for="business_name">Business name, if you have one</label><input id="business_name" name="business_name" type="text" value="<%= f.business_name || '' %>"></div>
+    <div class="field">
+      <label for="tax_class">Tax classification</label>
+      <select id="tax_class" name="tax_class">
+        <% Object.keys(TAX_CLASSES).forEach(function (k) { %><option value="<%= k %>" <%= f.tax_class === k ? 'selected' : '' %>><%= TAX_CLASSES[k] %></option><% }) %>
+      </select>
+    </div>
+    <div class="field"><label for="tin_last4">Last 4 of SSN or EIN <span class="req" aria-hidden="true">*</span></label><input id="tin_last4" name="tin_last4" type="text" inputmode="numeric" maxlength="4" pattern="\d{4}" required value="<%= f.tin_last4 || '' %>" autocomplete="off"></div>
+    <div class="field">
+      <label for="payout_method">How you get paid</label>
+      <select id="payout_method" name="payout_method">
+        <option value="direct_deposit" <%= f.payout_method !== 'check' ? 'selected' : '' %>>Direct deposit</option>
+        <option value="check" <%= f.payout_method === 'check' ? 'selected' : '' %>>Paper check</option>
+      </select>
+    </div>
+    <div class="field"><label for="bank_name">Bank name</label><input id="bank_name" name="bank_name" type="text" value="<%= f.bank_name || '' %>"></div>
+    <div class="field"><label for="account_last4">Last 4 of account number</label><input id="account_last4" name="account_last4" type="text" inputmode="numeric" maxlength="4" value="<%= f.account_last4 || '' %>" autocomplete="off"></div>
+  </div>
+</div>
+<div class="form-section">
+  <h2><span class="step-num">5</span> Agreements</h2>
+  <label class="check"><input type="checkbox" name="ack_work_auth" value="1" <%= f.ack_work_auth ? 'checked' : '' %> required> I am 18 or older and authorized to work in the United States.</label>
+  <label class="check"><input type="checkbox" name="ack_1099" value="1" <%= f.ack_1099 ? 'checked' : '' %> required> I am applying as a 1099 independent contractor, not an employee. I am responsible for my own taxes, insurance, and expenses, and I understand hours are not guaranteed.</label>
+  <label class="check"><input type="checkbox" name="ack_background" value="1" <%= f.ack_background ? 'checked' : '' %> required> I consent to a background check before I can claim work.</label>
+  <p class="hint mt-2">This is a working sample of a contractor agreement. Have counsel review it before you use it with real workers.</p>
+</div>

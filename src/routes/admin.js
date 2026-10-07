@@ -3,8 +3,8 @@ const crypto = require('node:crypto');
 const { all, get, run } = require('../db');
 const { requireRole, hashPassword } = require('../auth');
 const { clean, toInt, toArray, isoDate, addDays, startOfWeek, isValidDate, parseDate, serviceLabel } = require('../helpers');
-const { SERVICE_TYPES, STATUSES, NIGHTS } = require('../constants');
-const { getJob, listJobs, createJob, updateJob, dispatchJob, dispatchDay, setJobStatus, setRequestStatus, logActivity } = require('../jobs');
+const { SERVICE_TYPES, STATUSES, NIGHTS, CONTRACTOR_STATUSES } = require('../constants');
+const { getJob, listJobs, createJob, updateJob, dispatchJob, dispatchDay, setJobStatus, setRequestStatus, logActivity, releaseJob } = require('../jobs');
 const { notify } = require('../notify');
 
 const router = express.Router();
@@ -33,7 +33,7 @@ router.get('/', (req, res) => {
     queue: queue.length,
     urgent: queue.filter((q) => q.priority === 'urgent').length,
     today: todayJobs.length,
-    undispatchedToday: todayJobs.filter((j) => j.status === 'scheduled').length,
+    undispatchedToday: todayJobs.filter((j) => j.status === 'scheduled' && !(j.open_to_contractors && !j.claimed_by)).length,
     completedWeek: get("SELECT COUNT(*) AS n FROM jobs WHERE status = 'completed' AND scheduled_date BETWEEN ? AND ?", weekStart, addDays(weekStart, 6)).n,
     doors: get("SELECT COALESCE(SUM(p.units),0) AS n FROM properties p JOIN organizations o ON o.id = p.org_id WHERE o.status = 'active'").n,
     clients: get("SELECT COUNT(*) AS n FROM organizations WHERE status = 'active'").n,
@@ -98,6 +98,8 @@ function jobFormData(body) {
     supervisor_id: toInt(body.supervisor_id),
     technician_ids: toArray(body.technician_ids).map(toInt).filter(Boolean),
     instructions: clean(body.instructions, 1500),
+    open_to_contractors: body.open_to_contractors === '1',
+    pay_cents: Number.isFinite(parseFloat(body.pay)) ? Math.round(parseFloat(body.pay) * 100) : null,
   };
 }
 
@@ -106,7 +108,8 @@ function validateJob(d) {
   if (!d.title) errors.push('Give the job a short title.');
   if (!isValidDate(d.scheduled_date)) errors.push('Choose a valid service date.');
   if (d.start_time && d.end_time && d.end_time <= d.start_time) errors.push('End time must be after the start time.');
-  if (!d.supervisor_id) errors.push('Assign a field supervisor.');
+  if (!d.open_to_contractors && !d.supervisor_id) errors.push('Assign a field supervisor, or post the job on the contractor board.');
+  if (d.open_to_contractors && !(d.pay_cents > 0)) errors.push('Set a contractor payout greater than zero.');
   return errors;
 }
 
@@ -120,8 +123,9 @@ router.post('/requests/:id/schedule', (req, res) => {
     return res.redirect(`/admin/requests/${r.id}#schedule`);
   }
   const jobId = createJob(data, req.user.id);
-  if (req.body.dispatch_now) dispatchJob(jobId, req.user.id);
-  res.flash('success', `Job scheduled${req.body.dispatch_now ? ' and sent to the crew' : ''}.`);
+  const sendCrew = req.body.dispatch_now && !(data.open_to_contractors && !data.technician_ids.length);
+  if (sendCrew) dispatchJob(jobId, req.user.id);
+  res.flash('success', data.open_to_contractors ? 'Job posted on the contractor board.' : `Job scheduled${sendCrew ? ' and sent to the crew' : ''}.`);
   res.redirect(`/admin/requests/${r.id}`);
 });
 
@@ -212,8 +216,10 @@ router.post('/jobs', (req, res) => {
     for (let d = data.scheduled_date; d <= repeatUntil; d = addDays(d, 1)) if (repeatNights.includes(NIGHTS[parseDate(d).getDay()])) dates.push(d);
   } else dates.push(data.scheduled_date);
   const ids = dates.map((d) => createJob({ ...data, scheduled_date: d }, req.user.id));
-  if (req.body.dispatch_now) ids.forEach((id) => dispatchJob(id, req.user.id));
-  res.flash('success', `${ids.length} job${ids.length === 1 ? '' : 's'} created${req.body.dispatch_now ? ' and dispatched' : ''}.`);
+  const sendCrew = req.body.dispatch_now && !(data.open_to_contractors && !data.technician_ids.length);
+  if (sendCrew) ids.forEach((id) => dispatchJob(id, req.user.id));
+  const where = data.open_to_contractors ? ' and posted on the contractor job board' : sendCrew ? ' and dispatched' : '';
+  res.flash('success', `${ids.length} job${ids.length === 1 ? '' : 's'} created${where}.`);
   res.redirect(ids.length === 1 ? `/admin/jobs/${ids[0]}` : `/admin/schedule?start=${startOfWeek(data.scheduled_date)}`);
 });
 
@@ -350,6 +356,59 @@ router.post('/leads/:id/status', (req, res) => {
 
 router.get('/outbox', (req, res) => {
   res.render('admin/outbox', { title: 'Email Log', emails: all('SELECT * FROM outbox ORDER BY id DESC LIMIT 200') });
+});
+
+const CONTRACTOR_LIST = `
+  SELECT u.id, u.name, u.email, u.phone, u.active, u.created_at, c.*,
+         (SELECT COUNT(*) FROM jobs j WHERE j.claimed_by = u.id AND j.status NOT IN ('completed','cancelled')) AS active_gigs,
+         (SELECT COALESCE(SUM(pay_cents),0) FROM jobs j WHERE j.claimed_by = u.id AND j.status = 'completed' AND j.payout_status = 'unpaid') AS unpaid_cents
+    FROM contractor_profiles c JOIN users u ON u.id = c.user_id`;
+
+router.get('/contractors', (req, res) => {
+  const status = CONTRACTOR_STATUSES[req.query.status] ? req.query.status : 'submitted';
+  const people = all(`${CONTRACTOR_LIST} WHERE c.status = ? ORDER BY c.created_at`, status);
+  const counts = all('SELECT status, COUNT(*) AS n FROM contractor_profiles GROUP BY status');
+  res.render('admin/contractors', { title: '1099 Contractors', people, status, counts });
+});
+
+router.get('/contractors/:id', (req, res) => {
+  const person = get(`${CONTRACTOR_LIST} WHERE u.id = ?`, toInt(req.params.id));
+  if (!person) return res.redirect('/admin/contractors');
+  const gigs = listJobs('j.claimed_by = ?', person.id);
+  res.render('admin/contractor-detail', { title: person.name, person, gigs });
+});
+
+router.post('/contractors/:id/review', (req, res) => {
+  const person = get('SELECT u.id, u.name, c.status FROM users u JOIN contractor_profiles c ON c.user_id = u.id WHERE u.id = ? AND u.role = ?', toInt(req.params.id), 'contractor');
+  if (!person) return res.redirect('/admin/contractors');
+  const status = CONTRACTOR_STATUSES[req.body.status] ? req.body.status : person.status;
+  const note = clean(req.body.review_note, 1000);
+  run("UPDATE contractor_profiles SET status = ?, review_note = ?, reviewed_at = datetime('now') WHERE user_id = ?", status, note || null, person.id);
+  if (status === 'approved') run("UPDATE users SET title = '1099 Contractor', active = 1 WHERE id = ?", person.id);
+  const messages = {
+    approved: 'You are approved. Open the job board and claim a gig.',
+    needs_info: note || 'We need a bit more information. Update your profile and send it back.',
+    declined: note || 'We are not able to approve this application right now.',
+    suspended: note || 'Your contractor account is suspended. Contact dispatch with questions.',
+  };
+  notify(person.id, { title: `Contractor application: ${CONTRACTOR_STATUSES[status].label}`, body: messages[status] || note, link: status === 'approved' ? '/work' : '/work/profile' });
+  res.flash('success', `${person.name} marked ${CONTRACTOR_STATUSES[status].label.toLowerCase()}.`);
+  res.redirect(`/admin/contractors/${person.id}`);
+});
+
+router.post('/jobs/:id/release', (req, res) => {
+  const ok = releaseJob(toInt(req.params.id), req.user.id, { admin: true });
+  res.flash(ok ? 'success' : 'error', ok ? 'Gig returned to the job board.' : 'This gig is not claimed, or work has already started.');
+  res.redirect(`/admin/jobs/${req.params.id}`);
+});
+
+router.post('/jobs/:id/payout', (req, res) => {
+  const job = get("SELECT id, claimed_by, title, pay_cents FROM jobs WHERE id = ? AND status = 'completed'", toInt(req.params.id));
+  if (job) {
+    run("UPDATE jobs SET payout_status = 'paid' WHERE id = ?", job.id);
+    if (job.claimed_by) notify(job.claimed_by, { title: `Payout sent for ${job.title}`, body: 'This gig is marked paid on your earnings page.', link: '/work/earnings', email: false });
+  }
+  res.redirect(`/admin/jobs/${req.params.id}`);
 });
 
 module.exports = router;

@@ -1,0 +1,13 @@
+<%
+  const open = typeof gigOpen !== 'undefined' ? gigOpen : false;
+  const payValue = typeof gigPay !== 'undefined' && gigPay ? gigPay : '';
+%>
+<label class="check mt-2">
+  <input type="checkbox" name="open_to_contractors" value="1" data-gig-toggle <%= open ? 'checked' : '' %>>
+  Post on the 1099 contractor job board
+</label>
+<div class="field mt-2" data-gig-panel style="max-width:320px">
+  <label for="pay">Contractor payout (USD)</label>
+  <input id="pay" name="pay" type="number" min="1" step="0.01" inputmode="decimal" value="<%= payValue %>">
+  <span class="hint">Approved contractors see this price and claim the gig. A supervisor is optional when the job is on the board.</span>
+</div>

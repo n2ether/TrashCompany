@@ -8,7 +8,8 @@
     <span><%- typeChip(job.type) %></span>
     <% if (typeof showCrew === 'undefined' || showCrew) { %>
       <span><%- icon('shield', 'icon--sm') %> <%= job.supervisor_name || 'No supervisor' %></span>
-      <span><%- icon('users', 'icon--sm') %> <%= job.technician_names || 'No technicians assigned' %></span>
+      <span><%- icon('users', 'icon--sm') %> <%= job.claimed_name || job.technician_names || (job.open_to_contractors ? 'Open to contractors' : 'No technicians assigned') %></span>
+      <% if (job.open_to_contractors && job.pay_cents) { %><span><%- icon('dollar', 'icon--sm') %> <%= fmtMoney(job.pay_cents) %></span><% } %>
     <% } %>
   </div>
 </a>

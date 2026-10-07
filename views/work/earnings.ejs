@@ -1,0 +1,33 @@
+<%- include('../partials/app-start') %>
+<div class="page-head">
+  <div>
+    <h1>Earnings</h1>
+    <p>You are paid per completed gig. Valor Valet does not withhold taxes. Set aside what you owe as a 1099 contractor.</p>
+  </div>
+</div>
+<div class="stats">
+  <div class="stat"><span class="stat__icon stat__icon--gold"><%- icon('dollar') %></span><div><div class="stat__value"><%= fmtMoney(totals.unpaid) %></div><div class="stat__label">Waiting to be paid</div></div></div>
+  <div class="stat"><span class="stat__icon stat__icon--green"><%- icon('checkCircle') %></span><div><div class="stat__value"><%= fmtMoney(totals.paid) %></div><div class="stat__label">Paid out</div></div></div>
+</div>
+<div class="card card--flush">
+  <% if (!jobs.length) { %>
+    <div class="empty"><%- icon('receipt') %><h3>No completed gigs yet</h3><p>Finish a claimed gig and the payout shows up here.</p></div>
+  <% } else { %>
+    <div class="table-wrap">
+      <table class="table table--stack">
+        <thead><tr><th>Gig</th><th>Date</th><th>Payout</th><th>Status</th></tr></thead>
+        <tbody>
+          <% jobs.forEach(function (j) { %>
+            <tr>
+              <td data-label=""><a class="row-link" href="/work/jobs/<%= j.id %>"><%= j.title %></a><div class="muted small"><%= j.property_name %>, <%= j.city %></div></td>
+              <td data-label="Date"><%= fmtDate(j.scheduled_date) %></td>
+              <td data-label="Payout"><strong><%= fmtMoney(j.pay_cents || 0) %></strong></td>
+              <td data-label="Status"><% if (j.payout_status === 'paid') { %><span class="badge badge--success"><%- icon('check', 'icon--sm') %>Paid</span><% } else { %><span class="badge badge--amber"><%- icon('clock', 'icon--sm') %>Unpaid</span><% } %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</div>
+<%- include('../partials/app-end') %>

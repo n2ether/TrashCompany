@@ -49,6 +49,7 @@
     <h2><span class="step-num">3</span> Crew</h2>
     <%- include('../partials/crew-fields', { selected: form }) %>
     <div class="field mt-2"><label for="instructions">Crew instructions</label><textarea id="instructions" name="instructions"><%= form.instructions || '' %></textarea></div>
+    <%- include('../partials/gig-fields', { gigOpen: !!form.open_to_contractors, gigPay: form.pay_cents ? (form.pay_cents / 100).toFixed(2) : (GIG_PAY[form.type] / 100).toFixed(2) }) %>
     <label class="check mt-2"><input type="checkbox" name="dispatch_now" value="1"> Forward to supervisor &amp; technicians now</label>
   </div>
   <div class="btn-row">

@@ -3,8 +3,8 @@
 %>
 <div class="form-grid">
   <div class="field">
-    <label for="supervisor_id">Field supervisor <span class="req" aria-hidden="true">*</span></label>
-    <select id="supervisor_id" name="supervisor_id" required>
+    <label for="supervisor_id">Field supervisor</label>
+    <select id="supervisor_id" name="supervisor_id">
       <option value="">Choose a supervisor</option>
       <% supervisors.forEach(function (s) { %><option value="<%= s.id %>" <%= sel.supervisor_id === s.id ? 'selected' : '' %>><%= s.name %></option><% }) %>
     </select>

@@ -7,6 +7,13 @@
   </div>
 </div>
 
+<% if (navCounts && navCounts.contractors) { %>
+  <div class="alert alert--info">
+    <%- icon('dollar') %>
+    <div style="flex:1"><strong><%= navCounts.contractors %> contractor application<%= navCounts.contractors === 1 ? '' : 's' %></strong> waiting for review.</div>
+    <a class="btn btn--sm" href="/admin/contractors">Review</a>
+  </div>
+<% } %>
 <% if (stats.undispatchedToday) { %>
   <div class="alert alert--warn">
     <%- icon('alert') %>
